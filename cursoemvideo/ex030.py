@@ -1,7 +1,7 @@
-# Crie um programa que leia um número inteiro e mostre na tela se ele é PAR ou ÍMPAR
-num = int(input('Digite um número: '))
+# Create a program that reads an integer and shows on screen if it is EVEN or ODD
+num = int(input('Enter a number: '))
 if num % 2 == 0:
-    tipo = 'PAR'
+    kind = 'EVEN'
 else:
-    tipo = 'IMPAR'
-print('O número {} é {}'.format(num, tipo))
+    kind = 'ODD'
+print('The number {} is {}'.format(num, kind))

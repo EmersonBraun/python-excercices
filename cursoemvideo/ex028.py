@@ -1,16 +1,16 @@
-# Escreva um programa que faça o computador "pensar" em um número inteiro entre 0 e 5
-# e peça para o usuário tentar descobrir qual foi o número escolhido pelo computador.
-# O programa deverá escrever na tela se o usuário venceu ou perdeu
+# Write a program that makes the computer "think" of an integer between 0 and 5
+# and asks the user to try to guess the number chosen by the computer.
+# The program should write on screen whether the user won or lost
 from random import randint
 from time import sleep
-randomico = randint(0, 5)
-print('=-'*20)
-print('Vou pensar em um número entre 0 e 5.\n Tente adivinhar! ')
-print('=-'*20)
-numero = int(input('Que número eu pensei? '))
-print('Verificando')
+random_num = randint(0, 5)
+print('=-' * 20)
+print('I will think of a number between 0 and 5.\n Try to guess! ')
+print('=-' * 20)
+number = int(input('What number am I thinking of? '))
+print('Checking')
 sleep(2)
-if numero == randomico:
-    print('\nACERTÔ MISERAVI!')
+if number == random_num:
+    print('\nCORRECT!')
 else:
-    print('\nERRROUU, era {}'.format(randomico))
+    print('\nWRONG, it was {}'.format(random_num))

@@ -1,6 +1,6 @@
-#pintar uma parede
-largura = float(input('Insira a largura da parede: '))
-altura = float(input('Insira a altura da parede: '))
-area = largura * altura
-latas = area/2
-print('A parede de {}x{} tem área {:.2f}m² e serão necessárias {:.2f} latas'.format(largura, altura, area, latas))
+# painting a wall
+width = float(input('Enter the wall width: '))
+height = float(input('Enter the wall height: '))
+area = width * height
+cans = area / 2
+print('The wall of {}x{} has area {:.2f}m² and will require {:.2f} cans'.format(width, height, area, cans))

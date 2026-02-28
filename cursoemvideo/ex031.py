@@ -1,10 +1,10 @@
-# Desenvolva um programa que pergunte a distância de uma viagem em Km.
-# Calcule o preço da passagem, cobrando R$0,50 por Km para viagens de até 200Km
-# e R$0,45 parta viagens mais longas
+# Develop a program that asks the distance of a trip in km.
+# Calculate the ticket price, charging R$0.50 per km for trips up to 200 km
+# and R$0.45 for longer trips
 
-distancia = float(input('Digite a distância da viagem: '))
-if distancia <= 200:
-    total = distancia * 0.5
+distance = float(input('Enter the trip distance: '))
+if distance <= 200:
+    total = distance * 0.5
 else:
-    total = distancia * 0.45
-print('O valor da viagem é de R${:.2f}'.format(total))
+    total = distance * 0.45
+print('The trip cost is R${:.2f}'.format(total))
