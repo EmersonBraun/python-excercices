@@ -1,4 +1,4 @@
-#exercício para ver desconto de um produto
-preco = float(input('Qual o valor do produto: '))
-desconto = int(input('Qual é o valor do desconto: '))
-print('O produto de R${:.2f} com desconto de {}% fica R$ {:.2f}'.format(preco, desconto, preco - (preco * desconto / 100)))
+# exercise to calculate product discount
+price = float(input('What is the product price: '))
+discount = int(input('What is the discount value: '))
+print('The product of R${:.2f} with {}% discount becomes R$ {:.2f}'.format(price, discount, price - (price * discount / 100)))

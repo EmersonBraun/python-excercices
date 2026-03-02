@@ -1,5 +1,5 @@
-#seno, coseno e tangente
+# sine, cosine and tangent
 from math import radians, sin, cos, tan
-ang = float(input('Digite um ângulo: '))
-rad = radians(ang)
-print('O ângulo de {} tem o SENO de {:.2f}, COSENO {:.2f} e TANGENTE {:.2f}'.format(ang, sin(rad), cos(rad), tan(rad)))
+angle = float(input('Enter an angle: '))
+rad = radians(angle)
+print('The angle of {} has SINE of {:.2f}, COSINE {:.2f} and TANGENT {:.2f}'.format(angle, sin(rad), cos(rad), tan(rad)))

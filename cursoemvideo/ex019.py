@@ -1,8 +1,8 @@
-#sortear um item de um array
+# draw a random item from an array
 from random import choice
-n1 = input('Primeiro item: ')
-n2 = input('Segundo item: ')
-n3 = input('Terceiro item: ')
-n4 = input('Quarto item: ')
-list = [n1, n2, n3, n4]
-print('O escolhido foi: {}'.format(choice(list)))
+n1 = input('First item: ')
+n2 = input('Second item: ')
+n3 = input('Third item: ')
+n4 = input('Fourth item: ')
+items = [n1, n2, n3, n4]
+print('The chosen one was: {}'.format(choice(items)))

@@ -1,11 +1,11 @@
-# Faça um programa que leia um ano qualquer
-# e mostre se ele é bissexto
+# Write a program that reads any year
+# and shows whether it is a leap year
 
 from datetime import date
-ano = int(input('Que ano quer analisar? (0 para ano atual) '))
-if ano == 0:
-    ano = date.today().year
-if ano % 4 == 0 and ano % 100 != 0 or ano % 400 == 0:
-    print('O ano {} É bissexto'.format(ano))
+year = int(input('Which year do you want to analyze? (0 for current year) '))
+if year == 0:
+    year = date.today().year
+if year % 4 == 0 and year % 100 != 0 or year % 400 == 0:
+    print('The year {} IS a leap year'.format(year))
 else:
-    print('O ano {} NÃO É bissexto'.format(ano))
+    print('The year {} IS NOT a leap year'.format(year))

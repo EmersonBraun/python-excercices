@@ -1,4 +1,4 @@
-#média aritmética
-n1 = float(input('Digite o primeiro número: '))
-n2 = float(input('Digite o segundo número: '))
-print('A média entre {:.2f} e {:.2f} é: {:.2f}'.format(n1, n2, (n1 + n2) / 2))
+# arithmetic mean
+n1 = float(input('Enter the first number: '))
+n2 = float(input('Enter the second number: '))
+print('The mean of {:.2f} and {:.2f} is: {:.2f}'.format(n1, n2, (n1 + n2) / 2))
