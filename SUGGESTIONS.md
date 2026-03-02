@@ -10,7 +10,7 @@
 
 Suggested exercises:
 1. Hello World variants
-2. Temperature converter (Celsius ↔ Fahrenheit ↔ Kelvin)
+2. Temperature converter (Celsius <-> Fahrenheit <-> Kelvin)
 3. FizzBuzz
 4. Simple calculator
 5. Number guessing game (input/output loop)
