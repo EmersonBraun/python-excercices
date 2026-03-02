@@ -1,10 +1,10 @@
-# Faça um programa que leia três números
-# e mostre qual é o maior e qual é o menor
-num1 = float(input('Digite o primeiro número: '))
-num2 = float(input('Digite o segundo número: '))
-num3 = float(input('Digite o terceiro número: '))
+# Write a program that reads three numbers
+# and shows which is the largest and which is the smallest
+num1 = float(input('Enter the first number: '))
+num2 = float(input('Enter the second number: '))
+num3 = float(input('Enter the third number: '))
 
-numeros = [num1, num2, num3]
-numeros = sorted(numeros)
+numbers = [num1, num2, num3]
+numbers = sorted(numbers)
 
-print('O maior número é {} e o menor {}'.format(numeros[2], numeros[0]))
+print('The largest number is {} and the smallest {}'.format(numbers[2], numbers[0]))

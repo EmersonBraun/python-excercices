@@ -1,5 +1,5 @@
-# Crie um programa que leia o nome de uma cidade
-# diga se ela começa ou não com o nome "?"
-cidade = str(input('Digite o nome de uma cidade: ')).strip()
-coresp = str(input('Começo esperado: ')).strip()
-print(cidade[:len(coresp)].lower() == coresp.lower())
+# Create a program that reads the name of a city
+# and tells whether or not it starts with "?"
+city = str(input('Enter the name of a city: ')).strip()
+expected_start = str(input('Expected start: ')).strip()
+print(city[:len(expected_start)].lower() == expected_start.lower())

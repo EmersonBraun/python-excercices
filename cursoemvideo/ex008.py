@@ -1,5 +1,5 @@
-#conversor de medidas
-medida = float(input('Qual é a medida em metros: '))
-cm = medida * 100
-mm = medida * 1000
-print('A medida em centímetros é {:.2f} e em milímetros {:.2f}'.format(cm, mm))
+# unit converter
+measurement = float(input('What is the measurement in meters: '))
+cm = measurement * 100
+mm = measurement * 1000
+print('The measurement in centimeters is {:.2f} and in millimeters {:.2f}'.format(cm, mm))

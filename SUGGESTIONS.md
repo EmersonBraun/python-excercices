@@ -1,10 +1,7 @@
 # Python Exercises — Curriculum Plan & Suggestions
 
 ## Current Exercise Inventory
-
-The repository contains exercises from two courses:
-- **Cod3r** (Udemy) — 60+ files covering databases, control structures, functions, list comprehension, file manipulation, packages, OOP, functional programming, and projects
-- **Curso em video** — 68 exercises (ex001–ex068) covering Python basics
+[List all exercises found in the repo]
 
 ## Proposed Organization: Basic to Advanced
 
@@ -107,5 +104,5 @@ python-exercises/
 - Add expected input/output examples in comments
 - Include solution files in a `solutions/` subfolder
 - Add pytest test cases for each exercise
-- Add difficulty rating (star-1 to star-5)
+- Add difficulty rating (⭐ to ⭐⭐⭐⭐⭐)
 - Add estimated completion time

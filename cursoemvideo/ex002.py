@@ -1,3 +1,3 @@
-#Exercício para exibir um nome na tela
-nome = input('Qual é o seu nome? ')
-print('Seja bem-vindo, {}'.format(nome))
+# Exercise to display a name on the screen
+name = input('What is your name? ')
+print('Welcome, {}'.format(name))

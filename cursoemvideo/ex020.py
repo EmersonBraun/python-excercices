@@ -1,11 +1,11 @@
-# O mesmo professor do desafio 019 quer sortear a ordem de apresentação de trabalhos dos alunos.
-# Faça um programa que leia o nome dos quatro alunos e mostre a ordem sorteada
+# The same teacher from challenge 019 wants to draw the presentation order of student assignments.
+# Write a program that reads the names of four students and shows the drawn order
 from random import shuffle
-n1 = str(input('Primeiro item: '))
-n2 = str(input('Segundo item: '))
-n3 = str(input('Terceiro item: '))
-n4 = str(input('Quarto item: '))
-list = [n1, n2, n3, n4]
-shuffle(list)
-print('A nova ordem fica: ')
-print(list)
+n1 = str(input('First item: '))
+n2 = str(input('Second item: '))
+n3 = str(input('Third item: '))
+n4 = str(input('Fourth item: '))
+items = [n1, n2, n3, n4]
+shuffle(items)
+print('The new order is: ')
+print(items)

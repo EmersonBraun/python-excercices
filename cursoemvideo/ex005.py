@@ -1,3 +1,3 @@
-#antecessor e sucessor
-num = int(input('Digite um número: '))
-print('O sucessor de {} é: {}, e o antecessor é: {}'.format(num, (num + 1), (num - 1)))
+# predecessor and successor
+num = int(input('Enter a number: '))
+print('The successor of {} is: {}, and the predecessor is: {}'.format(num, (num + 1), (num - 1)))

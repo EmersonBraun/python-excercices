@@ -1,5 +1,5 @@
-#Exercício para ver a soma entre dois valores
-n1 = int(input('Valor 1: '))
-n2 = int(input('Valor 2: '))
+# Exercise to see the sum of two values
+n1 = int(input('Value 1: '))
+n2 = int(input('Value 2: '))
 s = n1 + n2
-print('A soma entre {} e {} é: {}'.format(n1, n2, s))
+print('The sum of {} and {} is: {}'.format(n1, n2, s))

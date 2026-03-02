@@ -1,5 +1,5 @@
-#catetos e hipotenusa
+# legs and hypotenuse
 from math import hypot
-co = float(input('Comprimento do cateto oposto: '))
-ca = float(input('Comprimento do cateto adjacente: '))
-print('A hipotenusa deve medir: {:.2f}'.format(hypot(co, ca)))
+co = float(input('Length of the opposite leg: '))
+ca = float(input('Length of the adjacent leg: '))
+print('The hypotenuse should measure: {:.2f}'.format(hypot(co, ca)))

@@ -1,5 +1,5 @@
-#conversor de temperaturas
-c = float(input('Digite a temperatura em célsius: '))
+# temperature converter
+c = float(input('Enter the temperature in Celsius: '))
 f = (c * 9/5) + 32
 k = c + 273.15
-print('A temperatura {:.2f}°C equivale a {:.2f}°F e {:.2f}°K '.format(c, f, k))
+print('The temperature {:.2f}°C equals {:.2f}°F and {:.2f}°K '.format(c, f, k))

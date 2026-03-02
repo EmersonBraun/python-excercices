@@ -1,4 +1,4 @@
-#quebrando um número (com bivlioteca)
+# breaking a number (with library)
 from math import trunc
-num = float(input('Digite um valor: '))
-print('O valor digitado foi {} e sua porção inteira é {}'.format(num, trunc(num)))
+num = float(input('Enter a value: '))
+print('The value entered was {} and its integer portion is {}'.format(num, trunc(num)))

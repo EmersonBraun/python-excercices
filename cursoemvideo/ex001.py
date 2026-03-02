@@ -1,2 +1,2 @@
-#Um básico Olá, mundo com a linguagem
-print('Olá, mundo!')
+# A basic Hello World in the language
+print('Hello, world!')
