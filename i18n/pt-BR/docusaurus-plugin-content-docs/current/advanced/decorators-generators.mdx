@@ -1,0 +1,450 @@
+---
+title: Decorators & Generators
+sidebar_label: Decorators & Generators
+sidebar_position: 2
+---
+
+# Decorators & Generators
+
+Neste módulo você vai dominar dois dos recursos mais poderosos do Python: **decorators** que envolvem e aprimoram funções sem modificá-las, e **generators** que produzem valores de forma preguiçosa para iteração eficiente em memória. Ao final você será capaz de escrever decorators reutilizáveis, criar sequências infinitas com `yield` e usar `itertools` para compor pipelines.
+
+## Objetivos de Aprendizagem
+
+- Entender o padrão decorator e a sintaxe `@`
+- Escrever decorators com e sem argumentos
+- Usar `functools.wraps` para preservar metadados
+- Criar funções geradoras com `yield`
+- Escrever expressões geradoras
+- Combinar generators com `itertools`
+
+---
+
+## Teoria
+
+### Decorators
+
+Um **decorator** é uma função que recebe outra função como argumento, a envolve com comportamento adicional e retorna a versão modificada. A sintaxe `@` é um atalho para `func = decorator(func)`:
+
+```python
+import functools
+
+def shout(func):
+    @functools.wraps(func)  # preserves __name__, __doc__, etc.
+    def wrapper(*args, **kwargs):
+        result = func(*args, **kwargs)
+        return str(result).upper()
+    return wrapper
+
+@shout
+def greet(name):
+    return f"hello, {name}"
+
+greet("alice")   # "HELLO, ALICE"
+```
+
+:::tip
+Sempre aplique `@functools.wraps(func)` na sua função `wrapper` interna. Sem isso, a função decorada perde seu `__name__` e `__doc__` originais, o que prejudica a introspecção e a depuração.
+:::
+
+### Decorators com Argumentos
+
+Para passar argumentos a um decorator, adicione uma terceira camada — uma função fábrica que retorna o decorator real:
+
+```python
+def repeat(n):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            for _ in range(n):
+                result = func(*args, **kwargs)
+            return result
+        return wrapper
+    return decorator
+
+@repeat(3)
+def say(msg):
+    print(msg)
+
+say("hi")   # prints "hi" three times
+```
+
+### Decorators de Classe
+
+Classes também podem ser decorators se implementarem `__call__`:
+
+```python
+class Counter:
+    def __init__(self, func):
+        functools.update_wrapper(self, func)
+        self.func = func
+        self.calls = 0
+
+    def __call__(self, *args, **kwargs):
+        self.calls += 1
+        return self.func(*args, **kwargs)
+
+@Counter
+def add(a, b):
+    return a + b
+
+add(1, 2)
+add(3, 4)
+print(add.calls)   # 2
+```
+
+Consulte [Decorators](https://docs.python.org/3/glossary.html#term-decorator) no glossário do Python.
+
+### Generators
+
+Uma **função geradora** usa `yield` em vez de `return`. Ao chamá-la, ela retorna um **objeto gerador** que produz valores um por vez — calculando cada valor apenas quando solicitado (avaliação preguiçosa):
+
+```python
+def count_up(start, stop):
+    n = start
+    while n <= stop:
+        yield n
+        n += 1
+
+for x in count_up(1, 5):
+    print(x)   # 1, 2, 3, 4, 5
+```
+
+Generators são ideais para sequências grandes ou infinitas pois nunca armazenam todos os valores na memória ao mesmo tempo.
+
+### Expressões Geradoras
+
+Como list comprehensions, mas com `()` — criam um generator sem precisar definir uma função:
+
+```python
+squares = (x**2 for x in range(1_000_000))   # no memory spike
+total = sum(squares)
+```
+
+### Fundamentos de itertools
+
+O módulo `itertools` fornece ferramentas combináveis para pipelines de generators:
+
+| Função | Descrição |
+|--------|-----------|
+| `itertools.count(start)` | Contador infinito |
+| `itertools.cycle(iterable)` | Repete o iterável para sempre |
+| `itertools.islice(gen, n)` | Obtém os primeiros n itens |
+| `itertools.takewhile(pred, gen)` | Produz enquanto o predicado for True |
+| `itertools.dropwhile(pred, gen)` | Pula enquanto o predicado for True |
+| `itertools.chain(*iters)` | Concatena iteráveis |
+
+```python
+import itertools
+
+fib_under_100 = list(itertools.takewhile(lambda x: x < 100, fibonacci_gen()))
+```
+
+Consulte [itertools — Funções para criar iteradores para loops eficientes](https://docs.python.org/3/library/itertools.html).
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Decorator Simples
+
+<PythonRunner
+  title="Simple Decorator"
+  difficulty="fácil"
+  initialCode={`import functools
+
+# Write a decorator called 'shout' that converts
+# the return value of any function to UPPERCASE.
+#
+# Example:
+#   @shout
+#   def greet(name):
+#       return f"hello, {name}"
+#
+#   greet("alice")  ->  "HELLO, ALICE"
+
+def shout(func):
+    # Your code here
+    pass
+
+@shout
+def greet(name):
+    return f"hello, {name}"
+
+@shout
+def title():
+    return "decorator basics"
+
+print(greet("alice"))
+print(title())
+`}
+  testCases={[
+    { input: "greet('alice')", expected: "HELLO, ALICE", description: "greet('alice') should return 'HELLO, ALICE'" },
+    { input: "greet('bob')", expected: "HELLO, BOB", description: "greet('bob') should return 'HELLO, BOB'" },
+    { input: "title()", expected: "DECORATOR BASICS", description: "title() should return 'DECORATOR BASICS'" },
+  ]}
+/>
+
+### Exercício 2 — Decorator de Log
+
+<PythonRunner
+  title="Logging Decorator"
+  difficulty="fácil"
+  initialCode={`import functools
+
+# Write a decorator called 'log_call' that prints:
+#   "Calling <name>(<args>)"  before the call
+#   "<name> returned <result>" after the call
+#
+# Use functools.wraps to preserve the original function's metadata.
+#
+# Example:
+#   @log_call
+#   def multiply(a, b):
+#       return a * b
+#
+#   multiply(3, 4)
+#   # prints: Calling multiply(3, 4)
+#   # prints: multiply returned 12
+#   # returns: 12
+
+def log_call(func):
+    # Your code here
+    pass
+
+@log_call
+def multiply(a, b):
+    return a * b
+
+result = multiply(3, 4)
+print(f"Result: {result}")
+print(f"Function name preserved: {multiply.__name__}")
+`}
+  testCases={[
+    { input: "multiply(3, 4)", expected: "12", description: "multiply(3, 4) should still return 12" },
+    { input: "multiply.__name__", expected: "multiply", description: "functools.wraps should preserve __name__" },
+    { input: "'Calling multiply' in sys.stdout.getvalue()", expected: "True", description: "Should print 'Calling multiply...'" },
+    { input: "'returned 12' in sys.stdout.getvalue()", expected: "True", description: "Should print '...returned 12'" },
+  ]}
+/>
+
+### Exercício 3 — Decorator com Argumentos
+
+<PythonRunner
+  title="Decorator with Arguments"
+  difficulty="médio"
+  initialCode={`import functools
+
+# Write a decorator factory called 'repeat(n)' that runs
+# the decorated function n times and returns the last result.
+#
+# Example:
+#   @repeat(3)
+#   def say(msg):
+#       print(msg)
+#
+#   say("hi")  # prints "hi" three times
+
+def repeat(n):
+    # Your code here — remember: this must return a decorator!
+    pass
+
+@repeat(3)
+def say(msg):
+    print(msg)
+
+@repeat(1)
+def square(x):
+    return x * x
+
+say("hello")
+result = square(5)
+print(f"square(5) = {result}")
+`}
+  testCases={[
+    { input: "sys.stdout.getvalue().count('hello')", expected: "3", description: "@repeat(3) should run the function 3 times" },
+    { input: "square(5)", expected: "25", description: "@repeat(1) should still return the correct result" },
+  ]}
+/>
+
+### Exercício 4 — Decorator de Memoização
+
+<PythonRunner
+  title="Memoize Decorator"
+  difficulty="médio"
+  initialCode={`import functools
+
+# Write a 'memoize' decorator that caches the results of a function.
+# If the function is called again with the same arguments, return
+# the cached result instead of recomputing.
+#
+# Expose the cache as wrapper.cache (a dict) so tests can inspect it.
+
+def memoize(func):
+    # Your code here
+    pass
+
+@memoize
+def fibonacci(n):
+    if n < 2:
+        return n
+    return fibonacci(n - 1) + fibonacci(n - 2)
+
+# This should be fast thanks to caching
+print(fibonacci(30))
+print(f"Cache size: {len(fibonacci.cache)}")
+`}
+  testCases={[
+    { input: "fibonacci(10)", expected: "55", description: "fibonacci(10) should be 55" },
+    { input: "fibonacci(30)", expected: "832040", description: "fibonacci(30) should be 832040" },
+    { input: "len(fibonacci.cache) > 0", expected: "True", description: "cache should be populated after calls" },
+    { input: "fibonacci(0)", expected: "0", description: "fibonacci(0) should be 0" },
+  ]}
+/>
+
+### Exercício 5 — Generator de Fibonacci
+
+<PythonRunner
+  title="Fibonacci Generator"
+  difficulty="fácil"
+  initialCode={`# Write a generator function fibonacci_gen() that yields
+# Fibonacci numbers indefinitely: 0, 1, 1, 2, 3, 5, 8, 13, ...
+#
+# Usage:
+#   gen = fibonacci_gen()
+#   [next(gen) for _ in range(8)]  ->  [0, 1, 1, 2, 3, 5, 8, 13]
+
+def fibonacci_gen():
+    # Your code here — use yield!
+    pass
+
+gen = fibonacci_gen()
+first_10 = [next(gen) for _ in range(10)]
+print(first_10)
+`}
+  testCases={[
+    { input: "list(x for x, _ in zip(fibonacci_gen(), range(10)))", expected: "[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]", description: "First 10 Fibonacci numbers" },
+    { input: "list(x for x, _ in zip(fibonacci_gen(), range(1)))[0]", expected: "0", description: "First value should be 0" },
+  ]}
+/>
+
+### Exercício 6 — Generator de Números Primos
+
+<PythonRunner
+  title="Prime Generator"
+  difficulty="médio"
+  initialCode={`# Write a generator function prime_gen() that yields
+# prime numbers indefinitely starting from 2.
+#
+# Hint: use trial division — for each candidate, check if it
+# is divisible by any integer from 2 up to sqrt(candidate).
+
+def prime_gen():
+    # Your code here
+    pass
+
+gen = prime_gen()
+first_10_primes = [next(gen) for _ in range(10)]
+print(first_10_primes)
+`}
+  testCases={[
+    { input: "list(x for x, _ in zip(prime_gen(), range(10)))", expected: "[2, 3, 5, 7, 11, 13, 17, 19, 23, 29]", description: "First 10 primes" },
+    { input: "list(x for x, _ in zip(prime_gen(), range(5)))[0]", expected: "2", description: "First prime should be 2" },
+  ]}
+/>
+
+### Exercício 7 — Pipeline com itertools
+
+<PythonRunner
+  title="itertools Pipeline"
+  difficulty="médio"
+  initialCode={`import itertools
+
+# Use itertools to build pipelines from generators.
+# Given this Fibonacci generator:
+
+def fibonacci_gen():
+    a, b = 0, 1
+    while True:
+        yield a
+        a, b = b, a + b
+
+# 1. Use itertools.takewhile to collect all Fibonacci numbers < 100
+#    Store the result in fibs_under_100 (a list)
+
+# 2. Use itertools.islice to take the first 5 Fibonacci numbers >= 100
+#    Hint: chain dropwhile + islice
+#    Store the result in next_5_fibs (a list)
+
+# 3. Use a generator expression to create a generator of squares of
+#    the first 10 Fibonacci numbers, then sum them into total_sum
+
+fibs_under_100 = None   # replace with your code
+next_5_fibs = None      # replace with your code
+total_sum = None        # replace with your code
+
+print(f"Fibs < 100: {fibs_under_100}")
+print(f"Next 5 fibs >= 100: {next_5_fibs}")
+print(f"Sum of squares of first 10 fibs: {total_sum}")
+`}
+  testCases={[
+    { input: "fibs_under_100", expected: "[0, 1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89]", description: "Fibonacci numbers less than 100" },
+    { input: "next_5_fibs", expected: "[144, 233, 377, 610, 987]", description: "First 5 Fibonacci numbers >= 100" },
+    { input: "total_sum", expected: "1870", description: "Sum of squares of first 10 Fibonacci numbers (0+1+1+4+9+25+64+169+441+1156)" },
+  ]}
+/>
+
+### Exercício 8 — Decorator de Classe (Bônus)
+
+:::caution Desafio Bônus
+Este exercício usa recursos avançados de orientação a objetos. Está incluído como um **desafio bônus** para quem quiser ir mais fundo.
+:::
+
+<PythonRunner
+  title="Class Decorator — Call Counter"
+  difficulty="difícil"
+  initialCode={`import functools
+
+# Implement a class-based decorator called 'CallCounter' that:
+# 1. Wraps any function
+# 2. Tracks how many times it has been called in self.calls
+# 3. Resets the counter when .reset() is called
+# 4. Works just like a regular decorator with @CallCounter
+#
+# Use functools.update_wrapper(self, func) to preserve metadata.
+
+class CallCounter:
+    def __init__(self, func):
+        functools.update_wrapper(self, func)
+        # Your code here
+        pass
+
+    def __call__(self, *args, **kwargs):
+        # Your code here
+        pass
+
+    def reset(self):
+        # Your code here
+        pass
+
+@CallCounter
+def add(a, b):
+    return a + b
+
+add(1, 2)
+add(3, 4)
+add(5, 6)
+print(f"Called {add.calls} times")
+add.reset()
+print(f"After reset: {add.calls} times")
+print(f"__name__ preserved: {add.__name__}")
+`}
+  testCases={[
+    { input: "add(1, 2)", expected: "3", description: "add should still return the correct result" },
+    { input: "add.calls", expected: "1", description: "calls should be 1 after one call in test context" },
+    { input: "add.__name__", expected: "add", description: "functools.update_wrapper should preserve __name__" },
+  ]}
+/>

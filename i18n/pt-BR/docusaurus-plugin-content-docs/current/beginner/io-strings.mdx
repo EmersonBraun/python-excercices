@@ -1,0 +1,326 @@
+---
+title: Entrada, Saída & Strings
+sidebar_label: Entrada, Saída & Strings
+sidebar_position: 3
+---
+
+# Entrada, Saída & Strings
+
+Neste módulo você vai dominar a principal ferramenta de saída do Python — `print()` — e se aprofundar em **strings**: como criá-las, transformá-las com métodos, fatiá-las e formatá-las para exibição. Ao final você será capaz de manipular texto com fluência e produzir saídas bem formatadas.
+
+## Objetivos de Aprendizagem
+
+- Usar `print()` com múltiplos argumentos, separadores e caracteres finais
+- Aplicar métodos comuns de string (`.upper()`, `.lower()`, `.strip()`, `.split()`, `.join()`, `.replace()`)
+- Fatiar strings com notação de índice
+- Usar caracteres de escape dentro de strings
+- Entender por que `input()` é substituído por parâmetros de função nos exercícios do navegador
+
+---
+
+## Teoria
+
+### print()
+
+`print()` envia saída para o console. Aceita qualquer número de argumentos separados por vírgulas e, por padrão, os une com um espaço e adiciona uma nova linha ao final:
+
+```python
+print("Hello", "world")          # Hello world
+print("Hello", "world", sep="-") # Hello-world
+print("Sem nova linha", end="")  # fica na mesma linha
+print(42, 3.14, True)            # 42 3.14 True
+```
+
+Consulte a [documentação de print()](https://docs.python.org/3/library/functions.html#print) para todos os parâmetros.
+
+:::note
+Nestes exercícios do navegador, `input()` não está disponível porque o ambiente executa Python via Pyodide (sem terminal interativo). Exercícios que normalmente leriam entrada do usuário aceitam o valor como um **parâmetro de função**.
+:::
+
+### Métodos de String
+
+Strings em Python são sequências imutáveis de caracteres. Elas possuem um rico conjunto de métodos embutidos que retornam **novas** strings:
+
+```python
+text = "  Hello, World!  "
+
+text.upper()          # "  HELLO, WORLD!  "
+text.lower()          # "  hello, world!  "
+text.strip()          # "Hello, World!"   — remove espaços no início/fim
+text.lstrip()         # "Hello, World!  " — apenas no lado esquerdo
+text.rstrip()         # "  Hello, World!" — apenas no lado direito
+
+text.replace("World", "Python")  # "  Hello, Python!  "
+
+csv = "a,b,c,d"
+csv.split(",")        # ["a", "b", "c", "d"]
+"-".join(["a", "b", "c"])  # "a-b-c"
+
+"hello".startswith("he")  # True
+"hello".endswith("lo")    # True
+"hello".find("ll")        # 2  (índice da primeira ocorrência)
+"hello".count("l")        # 2
+```
+
+:::tip
+Os métodos podem ser **encadeados**: `"  HELLO  ".strip().lower()` produz `"hello"`.
+:::
+
+Consulte [Métodos de String](https://docs.python.org/3/library/stdtypes.html#string-methods) para a lista completa.
+
+### Fatiamento de Strings
+
+Strings suportam acesso baseado em índice e fatiamento usando a sintaxe `[início:fim:passo]`:
+
+```python
+s = "Python"
+s[0]      # "P"   — primeiro caractere (índice 0)
+s[-1]     # "n"   — último caractere
+s[1:4]    # "yth" — índices 1, 2, 3 (fim é exclusivo)
+s[:3]     # "Pyt" — do início ao índice 3
+s[3:]     # "hon" — do índice 3 ao fim
+s[::-1]   # "nohtyP" — invertida
+s[::2]    # "Pto" — um caractere sim, um não
+```
+
+:::note
+Python usa **indexação baseada em zero**. Índices negativos contam a partir do fim: `s[-1]` é o último caractere, `s[-2]` é o penúltimo, e assim por diante.
+:::
+
+### Caracteres de Escape
+
+Dentro de literais de string você pode incorporar caracteres especiais usando sequências de barra invertida:
+
+| Sequência | Significado     |
+|-----------|-----------------|
+| `\n`      | Nova linha      |
+| `\t`      | Tabulação       |
+| `\\`      | `\` literal     |
+| `\'`      | Aspas simples   |
+| `\"`      | Aspas duplas    |
+
+```python
+print("Linha 1\nLinha 2")     # duas linhas
+print("Nome:\tAlice")         # tabulação entre label e valor
+print("Ela disse \"oi\"")     # aspas incorporadas
+```
+
+Como alternativa, use **strings brutas** (`r"..."`) para suprimir todo processamento de escape:
+
+```python
+path = r"C:\Users\nome\docs"   # barras invertidas são literais
+```
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Básico de print()
+
+<PythonRunner
+  title="print() Basics"
+  difficulty="easy"
+  initialCode={`# Practice different ways to call print().
+#
+# 1. Print "Hello" and "World" on the same line, separated by " | "
+#    Result: Hello | World
+# 2. Print "Done" without a trailing newline (end="")
+#    (tip: the test checks the stdout content)
+# 3. Store the joined string in a variable called greeting
+#    greeting = "Hello | World"
+
+# Your code here
+greeting = ""
+`}
+  testCases={[
+    { input: "greeting", expected: "Hello | World", description: "greeting should be 'Hello | World'" },
+    { input: "'Hello | World' in sys.stdout.getvalue()", expected: "True", description: "Output should contain 'Hello | World'" },
+  ]}
+/>
+
+### Exercício 2 — Métodos Básicos de String
+
+<PythonRunner
+  title="String Methods Basics"
+  difficulty="easy"
+  initialCode={`# Apply basic string methods to transform the text below.
+raw = "  python programming  "
+
+# 1. Create stripped — raw with leading/trailing whitespace removed
+# 2. Create upper_raw — raw converted to uppercase (then stripped)
+# 3. Create title_raw — stripped version in Title Case
+
+stripped = None
+upper_raw = None
+title_raw = None
+`}
+  testCases={[
+    { input: "stripped", expected: "python programming", description: "strip() should remove surrounding spaces" },
+    { input: "upper_raw", expected: "PYTHON PROGRAMMING", description: "strip then upper should give 'PYTHON PROGRAMMING'" },
+    { input: "title_raw", expected: "Python Programming", description: "strip then title() should give 'Python Programming'" },
+  ]}
+/>
+
+### Exercício 3 — Fatiamento de Strings
+
+<PythonRunner
+  title="String Slicing"
+  difficulty="easy"
+  initialCode={`# Practice string slicing.
+language = "JavaScript"
+
+# 1. first_four  — the first 4 characters
+# 2. last_six    — the last 6 characters
+# 3. every_other — every other character starting from index 0
+# 4. reversed_lang — the string reversed
+
+first_four = None
+last_six = None
+every_other = None
+reversed_lang = None
+`}
+  testCases={[
+    { input: "first_four", expected: "Java", description: "language[:4] should be 'Java'" },
+    { input: "last_six", expected: "Script", description: "language[-6:] should be 'Script'" },
+    { input: "every_other", expected: "JvSrp", description: "language[::2] should be 'JvSrp'" },
+    { input: "reversed_lang", expected: "tpircSavaJ", description: "language[::-1] should be 'tpircSavaJ'" },
+  ]}
+/>
+
+### Exercício 4 — split() e join()
+
+<PythonRunner
+  title="split() and join()"
+  difficulty="easy"
+  initialCode={`# Practice splitting and joining strings.
+sentence = "the quick brown fox"
+
+# 1. words — a list of all words in sentence (split on spaces)
+# 2. upper_words — a list with each word capitalised (use a list comprehension or loop)
+# 3. rejoined — upper_words joined back with " " separator
+
+words = None
+upper_words = None
+rejoined = None
+`}
+  testCases={[
+    { input: "words", expected: "['the', 'quick', 'brown', 'fox']", description: "split() should produce a list of 4 words" },
+    { input: "upper_words", expected: "['The', 'Quick', 'Brown', 'Fox']", description: "Each word should be capitalised" },
+    { input: "rejoined", expected: "The Quick Brown Fox", description: "join() should produce 'The Quick Brown Fox'" },
+  ]}
+/>
+
+### Exercício 5 — replace() e find()
+
+<PythonRunner
+  title="replace() and find()"
+  difficulty="medium"
+  initialCode={`# Use replace() and find() to manipulate a template string.
+template = "Dear {name}, your order #{order_id} is ready."
+
+# 1. filled — template with "{name}" replaced by "Alice"
+#             and "{order_id}" replaced by "7842"
+# 2. pos_order — the index where "order" first appears in filled
+# 3. has_alice — True if "Alice" is in filled, else False
+
+filled = None
+pos_order = None
+has_alice = None
+`}
+  testCases={[
+    { input: "filled", expected: "Dear Alice, your order #7842 is ready.", description: "Both placeholders should be replaced" },
+    { input: "pos_order", expected: "17", description: "'order' starts at index 17 in the filled string" },
+    { input: "has_alice", expected: "True", description: "'Alice' should be present in filled" },
+  ]}
+/>
+
+### Exercício 6 — Caracteres de Escape
+
+<PythonRunner
+  title="Escape Characters"
+  difficulty="medium"
+  initialCode={`# Build strings that require escape characters.
+#
+# 1. two_lines — a single string containing:
+#       Line 1
+#       Line 2
+#    (the two words separated by a real newline \\n)
+#
+# 2. tabbed — a string: "Name:\\tAlice"  (with a real tab)
+#
+# 3. quoted — a string: She said "hello"
+#    (double quotes embedded in the string)
+
+two_lines = None
+tabbed = None
+quoted = None
+`}
+  testCases={[
+    { input: "two_lines", expected: "Line 1\\nLine 2", description: "two_lines should contain a real newline" },
+    { input: "tabbed", expected: "Name:\\tAlice", description: "tabbed should contain a real tab" },
+    { input: "quoted", expected: 'She said "hello"', description: "quoted should embed double quotes" },
+  ]}
+/>
+
+### Exercício 7 — simulate_greeting (substituição de input)
+
+<PythonRunner
+  title="simulate_greeting"
+  difficulty="medium"
+  initialCode={`# Because input() is unavailable in the browser, we use a function parameter.
+# Write simulate_greeting(name) that returns the string:
+#   "Hello, {name}! Welcome to Python."
+# where {name} is the parameter value.
+
+def simulate_greeting(name):
+    pass  # replace with your implementation
+
+# Try it:
+print(simulate_greeting("Alice"))
+print(simulate_greeting("Bob"))
+`}
+  testCases={[
+    { input: "simulate_greeting('Alice')", expected: "Hello, Alice! Welcome to Python.", description: "Should return greeting for Alice" },
+    { input: "simulate_greeting('Bob')", expected: "Hello, Bob! Welcome to Python.", description: "Should return greeting for Bob" },
+    { input: "simulate_greeting('')", expected: "Hello, ! Welcome to Python.", description: "Should handle empty name" },
+  ]}
+/>
+
+### Exercício 8 — Analisador de String (Bônus)
+
+:::caution Desafio Antecipado
+Este exercício antecipa conceitos do módulo Loops. Está incluído como um **desafio bônus** para quem quiser explorar adiante.
+:::
+
+<PythonRunner
+  title="String Analyser"
+  difficulty="hard"
+  initialCode={`# Write analyze(text) that returns a dict with:
+#   "char_count"  — total number of characters
+#   "word_count"  — number of words (split on whitespace)
+#   "upper_count" — number of uppercase letters
+#   "lower_count" — number of lowercase letters
+#   "digit_count" — number of digit characters
+#
+# Example:
+#   analyze("Hello World 42")
+#   -> {"char_count": 14, "word_count": 3, "upper_count": 2,
+#       "lower_count": 8, "digit_count": 2}
+
+def analyze(text):
+    pass
+
+print(analyze("Hello World 42"))
+`}
+  testCases={[
+    { input: "analyze('Hello World 42')['char_count']", expected: "14", description: "'Hello World 42' has 14 characters" },
+    { input: "analyze('Hello World 42')['word_count']", expected: "3", description: "'Hello World 42' has 3 words" },
+    { input: "analyze('Hello World 42')['upper_count']", expected: "2", description: "'Hello World 42' has 2 uppercase letters" },
+    { input: "analyze('Hello World 42')['lower_count']", expected: "8", description: "'Hello World 42' has 8 lowercase letters" },
+    { input: "analyze('Hello World 42')['digit_count']", expected: "2", description: "'Hello World 42' has 2 digits" },
+  ]}
+/>

@@ -1,0 +1,483 @@
+---
+title: Bases de Datos y SQLite
+sidebar_label: Bases de Datos y SQLite
+sidebar_position: 5
+---
+
+# Bases de Datos y SQLite
+
+En este módulo aprenderás a almacenar y consultar datos estructurados usando **SQL** y el módulo `sqlite3` integrado de Python. Escribirás instrucciones CREATE TABLE, INSERT, SELECT, UPDATE y DELETE, usarás consultas parametrizadas para prevenir inyección SQL, y realizarás consultas JOIN y de agregación. Dado que `sqlite3` está disponible de forma nativa en Pyodide, todos los ejercicios se ejecutan directamente en el navegador usando **bases de datos en memoria**.
+
+## Objetivos de Aprendizaje
+
+- Entender los conceptos de bases de datos relacionales (tablas, filas, columnas)
+- Escribir SQL básico: `CREATE`, `INSERT`, `SELECT`, `UPDATE`, `DELETE`
+- Usar el módulo `sqlite3` de Python con gestores de contexto
+- Escribir consultas parametrizadas con marcadores de posición
+- Realizar consultas `JOIN` entre tablas
+- Usar funciones de agregación: `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`
+
+---
+
+## Teoría
+
+### Conectarse a SQLite
+
+El módulo `sqlite3` de Python está incluido en la biblioteca estándar. Usa `:memory:` para una base de datos en memoria que desaparece cuando el programa termina — perfecto para pruebas:
+
+```python
+import sqlite3
+
+# In-memory database (no file needed — great for Pyodide!)
+conn = sqlite3.connect(':memory:')
+cursor = conn.cursor()
+```
+
+Siempre cierra la conexión cuando termines, o usa un gestor de contexto:
+
+```python
+with sqlite3.connect(':memory:') as conn:
+    cursor = conn.cursor()
+    # ...
+```
+
+Consulta [sqlite3 — Interfaz DB-API 2.0](https://docs.python.org/3/library/sqlite3.html).
+
+### Crear Tablas
+
+```sql
+CREATE TABLE users (
+    id      INTEGER PRIMARY KEY AUTOINCREMENT,
+    name    TEXT    NOT NULL,
+    email   TEXT    UNIQUE,
+    age     INTEGER
+);
+```
+
+```python
+conn.execute("""
+    CREATE TABLE users (
+        id    INTEGER PRIMARY KEY AUTOINCREMENT,
+        name  TEXT NOT NULL,
+        email TEXT UNIQUE,
+        age   INTEGER
+    )
+""")
+conn.commit()
+```
+
+### INSERT
+
+```python
+# Never use string formatting — always use parameterized queries!
+conn.execute(
+    "INSERT INTO users (name, email, age) VALUES (?, ?, ?)",
+    ("Alice", "alice@example.com", 30)
+)
+
+# Insert many rows at once
+rows = [("Bob", "bob@example.com", 25), ("Carol", "carol@example.com", 35)]
+conn.executemany("INSERT INTO users (name, email, age) VALUES (?, ?, ?)", rows)
+conn.commit()
+```
+
+:::warning
+**Nunca** construyas consultas SQL con concatenación de cadenas como `f"...WHERE name = '{name}'"`. Esto crea una vulnerabilidad de **inyección SQL**. Siempre usa marcadores de posición `?`.
+:::
+
+### SELECT
+
+```python
+cursor = conn.execute("SELECT id, name, age FROM users WHERE age > ?", (25,))
+rows = cursor.fetchall()     # list of tuples
+
+# Or use fetchone() for a single row
+row = conn.execute("SELECT * FROM users WHERE id = ?", (1,)).fetchone()
+```
+
+`conn.row_factory = sqlite3.Row` hace que las filas sean accesibles por nombre de columna:
+
+```python
+conn.row_factory = sqlite3.Row
+row = conn.execute("SELECT * FROM users WHERE id = 1").fetchone()
+print(row["name"])   # Alice
+```
+
+### UPDATE y DELETE
+
+```python
+conn.execute("UPDATE users SET age = ? WHERE id = ?", (31, 1))
+conn.execute("DELETE FROM users WHERE age < ?", (18,))
+conn.commit()
+```
+
+### Agregaciones
+
+```python
+count = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+avg   = conn.execute("SELECT AVG(age) FROM users").fetchone()[0]
+total = conn.execute("SELECT SUM(salary) FROM employees").fetchone()[0]
+```
+
+### JOINs
+
+```sql
+SELECT u.name, o.product, o.amount
+FROM users u
+JOIN orders o ON u.id = o.user_id
+WHERE u.name = 'Alice';
+```
+
+---
+
+## Ejercicios
+
+:::info Cómo usar estos ejercicios
+Edita el código en cada panel y haz clic en **Run** (o presiona Ctrl+Enter / Cmd+Enter) para ejecutarlo. Si hay casos de prueba definidos, los resultados aparecen debajo de la salida.
+
+¡`sqlite3` tiene soporte nativo en Pyodide — no se necesita simulación!
+:::
+
+### Ejercicio 1 — Crear e Insertar
+
+<PythonRunner
+  title="Create and Insert"
+  difficulty="fácil"
+  initialCode={`import sqlite3
+
+# 1. Create an in-memory SQLite connection
+# 2. Create a table 'products' with columns:
+#      id (INTEGER PRIMARY KEY AUTOINCREMENT), name (TEXT), price (REAL), quantity (INTEGER)
+# 3. Insert these three products:
+#    ('Widget', 9.99, 100)
+#    ('Gadget', 24.99, 50)
+#    ('Doohickey', 4.49, 200)
+# 4. Commit and store the connection in 'conn'
+
+conn = None  # replace with your code
+
+# Verify
+if conn:
+    rows = conn.execute("SELECT name, price, quantity FROM products ORDER BY id").fetchall()
+    for row in rows:
+        print(row)
+`}
+  testCases={[
+    { input: "conn.execute('SELECT COUNT(*) FROM products').fetchone()[0]", expected: "3", description: "Should have 3 products" },
+    { input: "conn.execute(\"SELECT name FROM products WHERE id=1\").fetchone()[0]", expected: "Widget", description: "First product should be Widget" },
+    { input: "conn.execute(\"SELECT price FROM products WHERE name='Gadget'\").fetchone()[0]", expected: "24.99", description: "Gadget price should be 24.99" },
+  ]}
+/>
+
+### Ejercicio 2 — Consultas SELECT
+
+<PythonRunner
+  title="SELECT Queries"
+  difficulty="fácil"
+  initialCode={`import sqlite3
+
+# Setup — do not modify
+conn = sqlite3.connect(':memory:')
+conn.execute("""CREATE TABLE employees (
+    id INTEGER PRIMARY KEY, name TEXT, department TEXT, salary REAL)""")
+conn.executemany("INSERT INTO employees VALUES (?,?,?,?)", [
+    (1, 'Alice',   'Engineering', 95000),
+    (2, 'Bob',     'Marketing',   72000),
+    (3, 'Carol',   'Engineering', 105000),
+    (4, 'Dave',    'HR',          68000),
+    (5, 'Eve',     'Engineering', 88000),
+    (6, 'Frank',   'Marketing',   76000),
+])
+conn.commit()
+# ---- Your code below ----
+
+# 1. Select all Engineering employees and store as 'engineers' (list of tuples)
+engineers = None  # replace
+
+# 2. Select names of employees with salary > 80000, store as 'high_earners'
+#    (list of names, not tuples)
+high_earners = None  # replace
+
+# 3. Select the employee with the highest salary, store as 'top_earner' (single tuple)
+top_earner = None  # replace
+
+print(f"Engineers: {[r[1] for r in engineers]}")
+print(f"High earners: {high_earners}")
+salary = f"{top_earner[3]:,.0f}" if top_earner else "N/A"
+print(f"Top earner: {top_earner[1]} ($\\{salary})")
+`}
+  testCases={[
+    { input: "len(engineers)", expected: "3", description: "Should have 3 engineers" },
+    { input: "sorted([r[1] for r in engineers])", expected: "['Alice', 'Carol', 'Eve']", description: "Engineers should be Alice, Carol, Eve" },
+    { input: "sorted(high_earners)", expected: "['Alice', 'Carol', 'Eve']", description: "High earners (>80k) should be Alice, Carol, and Eve" },
+    { input: "top_earner[1]", expected: "Carol", description: "Top earner should be Carol" },
+  ]}
+/>
+
+### Ejercicio 3 — UPDATE y DELETE
+
+<PythonRunner
+  title="UPDATE and DELETE"
+  difficulty="fácil"
+  initialCode={`import sqlite3
+
+# Setup — do not modify
+conn = sqlite3.connect(':memory:')
+conn.execute("""CREATE TABLE inventory (
+    id INTEGER PRIMARY KEY, product TEXT, stock INTEGER, active INTEGER DEFAULT 1)""")
+conn.executemany("INSERT INTO inventory VALUES (?,?,?,?)", [
+    (1, 'Widget',    50, 1),
+    (2, 'Gadget',    10, 1),
+    (3, 'OldItem',    0, 1),
+    (4, 'Doohickey', 30, 1),
+])
+conn.commit()
+# ---- Your code below ----
+
+# 1. Update Widget's stock to 75 (use a parameterized query)
+# 2. Deactivate (set active=0) all products where stock == 0
+# 3. Delete all inactive products (where active == 0) from the table
+# 4. Commit all changes
+
+# Your code here
+
+# Verify
+rows = conn.execute("SELECT product, stock, active FROM inventory ORDER BY id").fetchall()
+for row in rows:
+    print(row)
+`}
+  testCases={[
+    { input: "conn.execute(\"SELECT stock FROM inventory WHERE product='Widget'\").fetchone()[0]", expected: "75", description: "Widget stock should be updated to 75" },
+    { input: "conn.execute('SELECT COUNT(*) FROM inventory').fetchone()[0]", expected: "3", description: "OldItem should be deleted, leaving 3 rows" },
+    { input: "conn.execute(\"SELECT COUNT(*) FROM inventory WHERE active=0\").fetchone()[0]", expected: "0", description: "No inactive items should remain" },
+  ]}
+/>
+
+### Ejercicio 4 — Consultas de Agregación
+
+<PythonRunner
+  title="Aggregation Queries"
+  difficulty="medio"
+  initialCode={`import sqlite3
+
+# Setup — do not modify
+conn = sqlite3.connect(':memory:')
+conn.execute("""CREATE TABLE sales (
+    id INTEGER PRIMARY KEY, product TEXT, category TEXT,
+    amount REAL, units INTEGER)""")
+conn.executemany("INSERT INTO sales (product, category, amount, units) VALUES (?,?,?,?)", [
+    ('Widget A',    'Hardware', 1200.00, 30),
+    ('Widget B',    'Hardware',  850.00, 20),
+    ('Software Pro','Software', 4500.00,  5),
+    ('Software Lite','Software',1200.00, 15),
+    ('Service Pack','Services', 2200.00,  8),
+    ('Consulting',  'Services', 3800.00,  4),
+])
+conn.commit()
+# ---- Your code below ----
+
+# 1. Calculate total revenue (SUM of amount), store in 'total_revenue'
+# 2. Calculate average amount per sale, store in 'avg_sale' (round to 2)
+# 3. Find category with highest total revenue: store category name in 'top_category'
+#    Hint: SELECT category, SUM(amount) ... GROUP BY category ORDER BY ... LIMIT 1
+# 4. Count sales per category as a dict: {'Hardware': 2, ...} -> store in 'sales_by_category'
+
+total_revenue = None    # replace
+avg_sale = None         # replace
+top_category = None     # replace
+sales_by_category = None  # replace (dict)
+
+rev_fmt = f"{total_revenue:,.2f}" if total_revenue else "N/A"
+avg_fmt = f"{avg_sale:,.2f}" if avg_sale else "N/A"
+print(f"Total revenue: $\\{rev_fmt}")
+print(f"Average sale: $\\{avg_fmt}")
+print(f"Top category: {top_category}")
+print(f"Sales by category: {sales_by_category}")
+`}
+  testCases={[
+    { input: "total_revenue", expected: "13750.0", description: "Total revenue should be $13,750" },
+    { input: "round(avg_sale, 2)", expected: "2291.67", description: "Average sale should be ~$2,291.67" },
+    { input: "top_category", expected: "Services", description: "Top category by revenue should be Services" },
+    { input: "sales_by_category['Hardware']", expected: "2", description: "Hardware should have 2 sales" },
+    { input: "sales_by_category['Services']", expected: "2", description: "Services should have 2 sales" },
+  ]}
+/>
+
+### Ejercicio 5 — Consultas JOIN
+
+<PythonRunner
+  title="JOIN Queries"
+  difficulty="medio"
+  initialCode={`import sqlite3
+
+# Setup — do not modify
+conn = sqlite3.connect(':memory:')
+conn.executescript("""
+CREATE TABLE customers (id INTEGER PRIMARY KEY, name TEXT, city TEXT);
+CREATE TABLE orders (
+    id INTEGER PRIMARY KEY, customer_id INTEGER, product TEXT, total REAL,
+    FOREIGN KEY (customer_id) REFERENCES customers(id));
+
+INSERT INTO customers VALUES (1,'Alice','London'),(2,'Bob','Paris'),(3,'Carol','London');
+INSERT INTO orders VALUES
+    (1,1,'Widget',  99.99),
+    (2,1,'Gadget', 149.99),
+    (3,2,'Widget',  99.99),
+    (4,3,'Doohickey',49.99),
+    (5,3,'Widget',  99.99);
+""")
+# ---- Your code below ----
+
+# 1. JOIN customers and orders to get all orders with customer names.
+#    Store as 'all_orders': list of (customer_name, product, total) tuples.
+
+# 2. Find the total amount spent by each customer.
+#    Store as 'spending': list of (customer_name, total_spent) tuples,
+#    ordered by total_spent DESC.
+
+# 3. Find all orders from London customers.
+#    Store as 'london_orders': list of (customer_name, product) tuples.
+
+all_orders = None     # replace
+spending = None       # replace
+london_orders = None  # replace
+
+print("All orders:")
+for row in (all_orders or []):
+    print(f"  {row}")
+print(f"\\nSpending: {spending}")
+print(f"London orders: {london_orders}")
+`}
+  testCases={[
+    { input: "len(all_orders)", expected: "5", description: "Should have 5 orders total" },
+    { input: "spending[0][0]", expected: "Alice", description: "Alice should be the top spender" },
+    { input: "round(spending[0][1], 2)", expected: "249.98", description: "Alice spent 99.99 + 149.99 = 249.98" },
+    { input: "len(london_orders)", expected: "3", description: "Alice and Carol (London) have 3 orders total" },
+  ]}
+/>
+
+### Ejercicio 6 — Consultas Parametrizadas y row_factory
+
+<PythonRunner
+  title="Parameterized Queries & row_factory"
+  difficulty="medio"
+  initialCode={`import sqlite3
+
+# Setup — do not modify
+conn = sqlite3.connect(':memory:')
+conn.row_factory = sqlite3.Row   # enables row['column_name'] access
+conn.executescript("""
+CREATE TABLE books (
+    isbn TEXT PRIMARY KEY, title TEXT, author TEXT, year INTEGER, price REAL);
+INSERT INTO books VALUES
+    ('978-0', 'Clean Code',           'Robert Martin', 2008, 35.99),
+    ('978-1', 'The Pragmatic Programmer','Hunt & Thomas',1999, 39.99),
+    ('978-2', 'Design Patterns',      'Gang of Four',  1994, 44.99),
+    ('978-3', 'Python Cookbook',      'Beazley & Jones',2013,49.99),
+    ('978-4', 'Fluent Python',        'Luciano Ramalho',2022,59.99);
+""")
+# ---- Your code below ----
+
+# sqlite3.Row lets you access columns by name: row['title'], row['price']
+#
+# 1. Write a function find_books_by_author(author) that returns a list
+#    of book titles (strings) for the given author.
+#    Use parameterized queries.
+#
+# 2. Write a function books_in_price_range(min_price, max_price) that
+#    returns a list of dicts {'title': ..., 'price': ...} for books
+#    in the given price range (inclusive), ordered by price ASC.
+
+def find_books_by_author(author):
+    # Your code here
+    pass
+
+def books_in_price_range(min_price, max_price):
+    # Your code here
+    pass
+
+print(find_books_by_author("Luciano Ramalho"))
+print(books_in_price_range(35.00, 45.00))
+`}
+  testCases={[
+    { input: "find_books_by_author('Luciano Ramalho')", expected: "['Fluent Python']", description: "Should find Fluent Python by Luciano Ramalho" },
+    { input: "len(books_in_price_range(35.00, 50.00))", expected: "4", description: "4 books between $35 and $50" },
+    { input: "books_in_price_range(35.00, 50.00)[0]['title']", expected: "Clean Code", description: "Cheapest book in range should be Clean Code" },
+  ]}
+/>
+
+### Ejercicio 7 — Aplicación CRUD Completa (Bonus)
+
+:::caution Desafío Bonus
+Construye una base de datos completa de gestión de tareas con operaciones CRUD completas.
+:::
+
+<PythonRunner
+  title="Task Manager Database"
+  difficulty="difícil"
+  initialCode={`import sqlite3
+from datetime import date
+
+# Build a simple task manager using sqlite3.
+#
+# Schema:
+#   tasks (id INTEGER PK AUTOINCREMENT, title TEXT NOT NULL,
+#          done INTEGER DEFAULT 0, due_date TEXT)
+#
+# Implement these functions (all use parameterized queries):
+#   create_task(conn, title, due_date=None) -> int (new task id)
+#   complete_task(conn, task_id) -> bool (True if found and updated)
+#   get_pending(conn) -> list of dicts {'id', 'title', 'due_date'}
+#   delete_completed(conn) -> int (number of rows deleted)
+
+def init_db():
+    conn = sqlite3.connect(':memory:')
+    conn.row_factory = sqlite3.Row
+    conn.execute("""
+        CREATE TABLE tasks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            done INTEGER DEFAULT 0,
+            due_date TEXT
+        )
+    """)
+    conn.commit()
+    return conn
+
+def create_task(conn, title, due_date=None):
+    # Your code here
+    pass
+
+def complete_task(conn, task_id):
+    # Your code here
+    pass
+
+def get_pending(conn):
+    # Your code here — return list of dicts
+    pass
+
+def delete_completed(conn):
+    # Your code here — return count of deleted rows
+    pass
+
+# Test
+conn = init_db()
+id1 = create_task(conn, "Buy groceries", "2026-03-20")
+id2 = create_task(conn, "Write tests")
+id3 = create_task(conn, "Deploy app", "2026-03-25")
+
+complete_task(conn, id1)
+
+pending = get_pending(conn)
+print(f"Pending tasks: {[t['title'] for t in pending]}")
+
+deleted = delete_completed(conn)
+print(f"Deleted {deleted} completed task(s)")
+print(f"Remaining: {conn.execute('SELECT COUNT(*) FROM tasks').fetchone()[0]}")
+`}
+  testCases={[
+    { input: "create_task(init_db(), 'Test task')", expected: "1", description: "First task should get id=1" },
+    { input: "len(get_pending(conn))", expected: "2", description: "2 pending tasks should remain after completing one" },
+    { input: "delete_completed(conn)", expected: "0", description: "No completed tasks after deletion (already cleaned)" },
+  ]}
+/>

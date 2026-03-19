@@ -1,0 +1,561 @@
+---
+title: Classes & Objetos
+sidebar_label: Classes & Objetos
+sidebar_position: 4
+---
+
+# Classes & Objetos
+
+Neste módulo você vai aprender como o Python implementa a **Programação Orientada a Objetos** (OOP) através de classes, instâncias e métodos. Você vai definir classes com `__init__`, gerenciar variáveis de instância e de classe, usar `self` e expor acesso seguro a atributos com `@property`. Ao final você será capaz de modelar entidades do mundo real como classes Python.
+
+## Objetivos de Aprendizagem
+
+- Definir uma classe e instanciar objetos
+- Escrever `__init__` para inicializar atributos de instância
+- Distinguir métodos de instância, métodos de classe e métodos estáticos
+- Entender a diferença entre variáveis de instância e variáveis de classe
+- Usar `@property` e setters para encapsular o acesso a atributos
+
+---
+
+## Teoria
+
+### Definindo uma Classe
+
+Uma classe é um molde para objetos. Você a define com a palavra-chave `class`:
+
+```python
+class Dog:
+    species = "Canis familiaris"   # variável de classe — compartilhada por todas as instâncias
+
+    def __init__(self, name, age):
+        self.name = name           # variável de instância — única por objeto
+        self.age = age
+
+    def bark(self):
+        return f"{self.name} says: Woof!"
+
+rex = Dog("Rex", 3)
+print(rex.bark())            # Rex says: Woof!
+print(rex.species)           # Canis familiaris
+print(Dog.species)           # Canis familiaris
+```
+
+:::tip
+Use `NomeDaClasse` em `PascalCase` (também chamado `UpperCamelCase`). Instâncias e métodos usam `snake_case`.
+:::
+
+Consulte [Classes — Tutorial Python](https://docs.python.org/3/tutorial/classes.html).
+
+### `__init__` e `self`
+
+`__init__` é o **inicializador** (informalmente chamado de construtor). É chamado automaticamente quando você cria uma nova instância. O primeiro parâmetro (`self`) é uma referência ao objeto recém-criado:
+
+```python
+class Circle:
+    PI = 3.14159
+
+    def __init__(self, radius):
+        if radius <= 0:
+            raise ValueError("Radius must be positive")
+        self.radius = radius
+
+    def area(self):
+        return Circle.PI * self.radius ** 2
+
+    def perimeter(self):
+        return 2 * Circle.PI * self.radius
+```
+
+:::note
+`self` é apenas uma convenção de nomenclatura — o Python passa a instância como o primeiro argumento automaticamente. Qualquer outro nome funciona, mas `self` é o padrão universal.
+:::
+
+### Variáveis de Instância vs. Variáveis de Classe
+
+| | Variável de instância | Variável de classe |
+|-|----------------------|-------------------|
+| Definida em | `__init__` (geralmente) | Corpo da classe (fora dos métodos) |
+| Armazenada no | Na instância | Na classe |
+| Escopo | Única para cada objeto | Compartilhada por todas as instâncias |
+
+```python
+class Counter:
+    count = 0          # variável de classe
+
+    def __init__(self):
+        Counter.count += 1
+        self.id = Counter.count   # variável de instância
+
+a = Counter()
+b = Counter()
+print(Counter.count)  # 2
+print(a.id, b.id)     # 1 2
+```
+
+### `@property`
+
+`@property` transforma um método em um atributo somente leitura, permitindo que você adicione validação ou valores computados sem alterar a interface externa:
+
+```python
+class Temperature:
+    def __init__(self, celsius):
+        self._celsius = celsius
+
+    @property
+    def celsius(self):
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):
+        if value < -273.15:
+            raise ValueError("Temperature below absolute zero!")
+        self._celsius = value
+
+    @property
+    def fahrenheit(self):
+        return self._celsius * 9 / 5 + 32
+
+t = Temperature(100)
+print(t.fahrenheit)   # 212.0
+t.celsius = 0
+print(t.fahrenheit)   # 32.0
+```
+
+:::tip
+Prefixe atributos "privados" com um sublinhado (`_celsius`) por convenção. O Python não impõe controle de acesso, mas o sublinhado sinaliza "não toque nisso diretamente".
+:::
+
+Consulte [property — Funções Embutidas](https://docs.python.org/3/library/functions.html#property).
+
+### `@classmethod` e `@staticmethod`
+
+```python
+class Date:
+    def __init__(self, year, month, day):
+        self.year, self.month, self.day = year, month, day
+
+    @classmethod
+    def from_string(cls, date_str):
+        year, month, day = map(int, date_str.split("-"))
+        return cls(year, month, day)   # cria uma instância
+
+    @staticmethod
+    def is_leap_year(year):
+        return year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+
+d = Date.from_string("2024-03-15")
+print(Date.is_leap_year(2024))  # True
+```
+
+---
+
+## Demonstração Visual
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-from-zero-to-hero/demos/linked-list/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Linked List Visualization"
+  />
+</div>
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Classe Retângulo
+
+<PythonRunner
+  title="Rectangle Class"
+  difficulty="easy"
+  initialCode={`# Define a Rectangle class with:
+# - __init__(self, width, height)
+# - area(self) → width * height
+# - perimeter(self) → 2 * (width + height)
+# - is_square(self) → True if width == height
+
+class Rectangle:
+    def __init__(self, width, height):
+        # Your code here
+        pass
+
+    def area(self):
+        pass
+
+    def perimeter(self):
+        pass
+
+    def is_square(self):
+        pass
+
+r = Rectangle(4, 6)
+print(r.area())        # 24
+print(r.perimeter())   # 20
+print(r.is_square())   # False
+
+sq = Rectangle(5, 5)
+print(sq.is_square())  # True
+`}
+  testCases={[
+    { input: "Rectangle(4, 6).area()", expected: "24", description: "area() should return width * height" },
+    { input: "Rectangle(4, 6).perimeter()", expected: "20", description: "perimeter() should return 2*(w+h)" },
+    { input: "Rectangle(5, 5).is_square()", expected: "True", description: "5x5 should be a square" },
+    { input: "Rectangle(4, 6).is_square()", expected: "False", description: "4x6 should not be a square" },
+  ]}
+/>
+
+### Exercício 2 — Contador de Variável de Classe
+
+<PythonRunner
+  title="Class Variable Counter"
+  difficulty="easy"
+  initialCode={`# Define a Student class with:
+# - A CLASS variable student_count = 0
+# - __init__(self, name, grade) — increments student_count
+# - A classmethod get_count(cls) that returns student_count
+
+class Student:
+    student_count = 0
+
+    def __init__(self, name, grade):
+        # Your code here
+        pass
+
+    @classmethod
+    def get_count(cls):
+        pass
+
+s1 = Student("Alice", "A")
+s2 = Student("Bob", "B")
+s3 = Student("Charlie", "A")
+print(Student.get_count())  # 3
+`}
+  testCases={[
+    { input: "Student.student_count", expected: "3", description: "student_count is 3 after creating s1, s2, s3" },
+    { input: "s = Student('X', 'A'); Student.get_count() >= 1", expected: "True", description: "get_count() should increase after creating a student" },
+  ]}
+/>
+
+### Exercício 3 — Validação com Property
+
+<PythonRunner
+  title="Property Validation"
+  difficulty="easy"
+  initialCode={`# Define a Circle class with:
+# - __init__(self, radius) — stores radius (validate > 0)
+# - radius as a @property with a setter that raises ValueError if <= 0
+# - area(self) → π * r² (use 3.14159)
+# - diameter as a read-only @property → 2 * radius
+
+class Circle:
+    PI = 3.14159
+
+    def __init__(self, radius):
+        # Use self.radius = radius so the setter runs
+        self.radius = radius
+
+    @property
+    def radius(self):
+        return self._radius
+
+    @radius.setter
+    def radius(self, value):
+        # Your code here — raise ValueError if value <= 0
+        pass
+
+    @property
+    def diameter(self):
+        pass
+
+    def area(self):
+        pass
+
+c = Circle(5)
+print(c.area())       # 78.53975
+print(c.diameter)     # 10
+`}
+  testCases={[
+    { input: "round(Circle(5).area(), 5)", expected: "78.53975", description: "area() of radius 5 should be ~78.53975" },
+    { input: "Circle(5).diameter", expected: "10", description: "diameter should be 2 * radius" },
+    { input: "Circle(3).radius", expected: "3", description: "radius property should return the stored value" },
+  ]}
+/>
+
+### Exercício 4 — Conta Bancária
+
+<PythonRunner
+  title="Bank Account"
+  difficulty="medium"
+  initialCode={`# Define a BankAccount class with:
+# - __init__(self, owner, balance=0)
+# - deposit(self, amount) — raises ValueError if amount <= 0
+# - withdraw(self, amount) — raises ValueError if amount > balance or amount <= 0
+# - balance as a read-only @property
+# - __str__ returns "BankAccount(owner=X, balance=Y)"
+
+class BankAccount:
+    def __init__(self, owner, balance=0):
+        self._owner = owner
+        self._balance = balance
+
+    @property
+    def balance(self):
+        return self._balance
+
+    def deposit(self, amount):
+        # Your code here
+        pass
+
+    def withdraw(self, amount):
+        # Your code here
+        pass
+
+    def __str__(self):
+        return f"BankAccount(owner={self._owner}, balance={self._balance})"
+
+acc = BankAccount("Alice", 100)
+acc.deposit(50)
+acc.withdraw(30)
+print(acc.balance)  # 120
+print(acc)          # BankAccount(owner=Alice, balance=120)
+`}
+  testCases={[
+    { input: "a = BankAccount('Bob', 200); a.deposit(100); a.balance", expected: "300", description: "deposit() should increase balance" },
+    { input: "a = BankAccount('Bob', 200); a.withdraw(50); a.balance", expected: "150", description: "withdraw() should decrease balance" },
+    { input: "str(BankAccount('Eve', 0))", expected: "BankAccount(owner=Eve, balance=0)", description: "__str__ should format correctly" },
+  ]}
+/>
+
+### Exercício 5 — Hierarquia Base de Formas
+
+<PythonRunner
+  title="Shape Base Class"
+  difficulty="medium"
+  initialCode={`# Define a Shape base class and two subclasses.
+#
+# Shape:
+#   - __init__(self, color="white")
+#   - describe(self) → "A white shape" (uses self.color)
+#   - area(self) → raises NotImplementedError (must be overridden)
+#
+# Rectangle(Shape):
+#   - __init__(self, width, height, color="white")
+#   - area(self) → width * height
+#
+# Circle(Shape):
+#   - __init__(self, radius, color="white")
+#   - area(self) → 3.14159 * radius ** 2
+
+class Shape:
+    def __init__(self, color="white"):
+        self.color = color
+
+    def describe(self):
+        return f"A {self.color} shape"
+
+    def area(self):
+        raise NotImplementedError("Subclasses must implement area()")
+
+class Rectangle(Shape):
+    def __init__(self, width, height, color="white"):
+        # Call parent __init__, then set width and height
+        # Your code here
+        pass
+
+    def area(self):
+        pass
+
+class Circle(Shape):
+    PI = 3.14159
+
+    def __init__(self, radius, color="white"):
+        # Your code here
+        pass
+
+    def area(self):
+        pass
+
+r = Rectangle(4, 5, color="red")
+c = Circle(3, color="blue")
+print(r.describe())   # A red shape
+print(r.area())       # 20
+print(c.area())       # 28.27431
+`}
+  testCases={[
+    { input: "Rectangle(4, 5).area()", expected: "20", description: "Rectangle area should be width * height" },
+    { input: "round(Circle(3).area(), 5)", expected: "28.27431", description: "Circle area should be PI * r^2" },
+    { input: "Rectangle(4, 5, color='red').describe()", expected: "A red shape", description: "describe() should use the color attribute" },
+    { input: "Circle(3, color='blue').color", expected: "blue", description: "color attribute should be stored" },
+  ]}
+/>
+
+### Exercício 6 — Temperatura com @property
+
+<PythonRunner
+  title="Temperature Converter Class"
+  difficulty="medium"
+  initialCode={`# Define a Temperature class that stores values in Celsius internally.
+# - __init__(self, celsius)
+# - celsius: @property with setter (reject values below -273.15)
+# - fahrenheit: read-only @property → celsius * 9/5 + 32
+# - kelvin: read-only @property → celsius + 273.15
+# - classmethod from_fahrenheit(cls, f) — creates instance from Fahrenheit
+
+class Temperature:
+    def __init__(self, celsius):
+        self.celsius = celsius  # use setter for validation
+
+    @property
+    def celsius(self):
+        return self._celsius
+
+    @celsius.setter
+    def celsius(self, value):
+        # Your code here
+        pass
+
+    @property
+    def fahrenheit(self):
+        pass
+
+    @property
+    def kelvin(self):
+        pass
+
+    @classmethod
+    def from_fahrenheit(cls, f):
+        # Your code here
+        pass
+
+t = Temperature(100)
+print(t.fahrenheit)   # 212.0
+print(t.kelvin)       # 373.15
+t2 = Temperature.from_fahrenheit(32)
+print(t2.celsius)     # 0.0
+`}
+  testCases={[
+    { input: "Temperature(100).fahrenheit", expected: "212.0", description: "100°C should be 212°F" },
+    { input: "Temperature(0).kelvin", expected: "273.15", description: "0°C should be 273.15 K" },
+    { input: "Temperature.from_fahrenheit(32).celsius", expected: "0.0", description: "32°F should be 0°C" },
+  ]}
+/>
+
+### Exercício 7 — Item de Inventário
+
+<PythonRunner
+  title="Inventory Item"
+  difficulty="hard"
+  initialCode={`# Define an InventoryItem class for a shop inventory system.
+#
+# - __init__(self, name, price, quantity)
+#   - Validates: price >= 0, quantity >= 0 (raise ValueError otherwise)
+# - total_value: read-only @property → price * quantity
+# - restock(self, amount) — adds amount to quantity
+# - sell(self, amount) — subtracts amount; raises ValueError if stock insufficient
+# - classmethod from_dict(cls, d) — creates instance from a dict
+#   {"name": ..., "price": ..., "quantity": ...}
+# - __repr__ → "InventoryItem(name=X, price=Y, quantity=Z)"
+
+class InventoryItem:
+    def __init__(self, name, price, quantity):
+        # Your code here
+        pass
+
+    @property
+    def total_value(self):
+        pass
+
+    def restock(self, amount):
+        pass
+
+    def sell(self, amount):
+        pass
+
+    @classmethod
+    def from_dict(cls, d):
+        pass
+
+    def __repr__(self):
+        pass
+
+item = InventoryItem("Widget", 9.99, 100)
+item.restock(50)
+item.sell(30)
+print(item.total_value)   # 9.99 * 120 = 1198.8
+print(item)
+`}
+  testCases={[
+    { input: "InventoryItem('X', 5.0, 10).total_value", expected: "50.0", description: "total_value should be price * quantity" },
+    { input: "i = InventoryItem('X', 5.0, 10); i.sell(3); i.quantity", expected: "7", description: "sell() should reduce quantity" },
+    { input: "i = InventoryItem('X', 5.0, 10); i.restock(5); i.quantity", expected: "15", description: "restock() should increase quantity" },
+    { input: "InventoryItem.from_dict({'name':'Y','price':2.0,'quantity':5}).name", expected: "Y", description: "from_dict() should create an instance correctly" },
+  ]}
+/>
+
+### Exercício 8 — Nó de Lista Encadeada (Bônus)
+
+:::caution Desafio Antecipado
+Este exercício antecipa recursão e estruturas de dados. Está incluído como um **desafio bônus** para quem quiser se aprofundar.
+:::
+
+<PythonRunner
+  title="Linked List"
+  difficulty="hard"
+  initialCode={`# Implement a simple singly-linked list.
+#
+# Node:
+#   - __init__(self, value, next_node=None)
+#
+# LinkedList:
+#   - __init__(self)  — head = None, size = 0
+#   - append(self, value)   — add to end
+#   - prepend(self, value)  — add to front
+#   - to_list(self)         — return Python list of values in order
+#   - __len__(self)         — return size
+
+class Node:
+    def __init__(self, value, next_node=None):
+        self.value = value
+        self.next_node = next_node
+
+class LinkedList:
+    def __init__(self):
+        self.head = None
+        self.size = 0
+
+    def append(self, value):
+        # Your code here
+        pass
+
+    def prepend(self, value):
+        # Your code here
+        pass
+
+    def to_list(self):
+        # Your code here
+        pass
+
+    def __len__(self):
+        return self.size
+
+ll = LinkedList()
+ll.append(1)
+ll.append(2)
+ll.append(3)
+ll.prepend(0)
+print(ll.to_list())   # [0, 1, 2, 3]
+print(len(ll))        # 4
+`}
+  testCases={[
+    { input: "ll = LinkedList(); ll.append(1); ll.append(2); ll.to_list()", expected: "[1, 2]", description: "append() should add to end" },
+    { input: "ll = LinkedList(); ll.append(2); ll.prepend(1); ll.to_list()", expected: "[1, 2]", description: "prepend() should add to front" },
+    { input: "ll = LinkedList(); ll.append(1); ll.append(2); len(ll)", expected: "2", description: "__len__ should return size" },
+  ]}
+/>

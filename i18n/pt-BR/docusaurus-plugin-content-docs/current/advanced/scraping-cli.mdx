@@ -1,0 +1,490 @@
+---
+title: Web Scraping & Ferramentas CLI
+sidebar_label: Web Scraping & CLI
+sidebar_position: 6
+---
+
+# Web Scraping & Ferramentas CLI
+
+Neste módulo você vai aprender padrões de **web scraping** — extraindo dados estruturados de HTML — e como construir **ferramentas de interface de linha de comando (CLI)** com o módulo `argparse` do Python. Como o `BeautifulSoup` pode não estar disponível no sandbox do navegador sem o `micropip`, os exercícios de scraping usam strings HTML simuladas com **regex e métodos de string** (os mesmos padrões que você aplicaria em HTML real). Para os exercícios de CLI, você testa parsers `argparse` usando listas de argumentos explícitas.
+
+## Objetivos de Aprendizagem
+
+- Analisar strings HTML usando métodos de string e `re`
+- Extrair dados com padrões semelhantes a seletores CSS
+- Entender a API do `BeautifulSoup` para uso no mundo real
+- Construir ferramentas CLI com `argparse`
+- Definir argumentos posicionais e opcionais
+- Testar CLIs com `parse_args()` em listas de argumentos explícitas
+
+---
+
+## Teoria
+
+### Estrutura HTML
+
+HTML é uma árvore de **elementos** (tags) que contêm texto e atributos:
+
+```html
+<html>
+  <body>
+    <h1 class="title">Hello World</h1>
+    <ul id="items">
+      <li><a href="/page/1">Page 1</a></li>
+      <li><a href="/page/2">Page 2</a></li>
+    </ul>
+  </body>
+</html>
+```
+
+O web scraping extrai dados dessa estrutura de forma programática.
+
+### BeautifulSoup (Mundo Real)
+
+Em um ambiente Python real, você instalaria `beautifulsoup4` e usaria:
+
+```python
+from bs4 import BeautifulSoup
+
+soup = BeautifulSoup(html_string, "html.parser")
+
+# Find by tag
+title = soup.find("h1").text              # "Hello World"
+
+# Find all links
+links = soup.find_all("a")
+hrefs = [a["href"] for a in links]        # ["/page/1", "/page/2"]
+
+# CSS selectors
+items = soup.select("ul#items li a")      # all <a> inside the list
+```
+
+### Análise com `re` (Compatível com Navegador)
+
+No sandbox do navegador usamos `re` para extrair dados de strings HTML:
+
+```python
+import re
+
+html = '<a href="/page/1">Page 1</a><a href="/page/2">Page 2</a>'
+
+# Extract all href values
+hrefs = re.findall(r'href="([^"]+)"', html)   # ['/page/1', '/page/2']
+
+# Extract text between tags
+texts = re.findall(r'<a[^>]*>([^<]+)</a>', html)  # ['Page 1', 'Page 2']
+```
+
+:::tip
+`re.findall(pattern, text)` retorna uma lista de todas as correspondências. Se o padrão tiver **um grupo de captura** `(...)`, retorna as strings capturadas. Com múltiplos grupos, retorna uma lista de tuplas.
+:::
+
+Consulte [re — Operações com expressões regulares](https://docs.python.org/3/library/re.html).
+
+### argparse — Ferramentas CLI
+
+`argparse` é a biblioteca padrão do Python para construir interfaces de linha de comando:
+
+```python
+import argparse
+
+parser = argparse.ArgumentParser(description="My CLI tool")
+
+# Positional argument (required)
+parser.add_argument("filename", help="Input file path")
+
+# Optional argument (flag)
+parser.add_argument("--verbose", "-v", action="store_true", help="Verbose output")
+
+# Optional argument with value
+parser.add_argument("--output", "-o", default="output.txt", help="Output file")
+
+# Numeric argument with type conversion
+parser.add_argument("--count", type=int, default=10, help="Number of results")
+```
+
+Em produção, chame `parser.parse_args()` sem argumentos (lê `sys.argv`). Em testes, passe uma lista explícita:
+
+```python
+args = parser.parse_args(["myfile.txt", "--verbose", "--count", "5"])
+print(args.filename)   # "myfile.txt"
+print(args.verbose)    # True
+print(args.count)      # 5
+```
+
+Consulte [argparse — Parser para opções de linha de comando](https://docs.python.org/3/library/argparse.html).
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+
+Os exercícios de scraping usam strings HTML simuladas e `re` para compatibilidade com o navegador. Os exercícios de CLI testam parsers `argparse` usando listas de argumentos explícitas.
+:::
+
+### Exercício 1 — Extrair Links
+
+<PythonRunner
+  title="Extract Links"
+  difficulty="fácil"
+  initialCode={`import re
+
+# Mock HTML — represents what a real web page might contain
+html = """
+<html>
+<head><title>Python Resources</title></head>
+<body>
+  <h1>Useful Links</h1>
+  <ul>
+    <li><a href="https://docs.python.org">Python Docs</a></li>
+    <li><a href="https://pypi.org">PyPI</a></li>
+    <li><a href="https://realpython.com">Real Python</a></li>
+    <li><a href="https://peps.python.org">Python PEPs</a></li>
+  </ul>
+</body>
+</html>
+"""
+
+# 1. Extract the page title (text between <title> and </title>)
+#    Store in 'page_title' (str)
+#
+# 2. Extract all href values from <a> tags
+#    Store in 'hrefs' (list of str)
+#
+# 3. Extract all link text (the text between <a ...> and </a>)
+#    Store in 'link_texts' (list of str)
+
+page_title = None   # replace
+hrefs = None        # replace
+link_texts = None   # replace
+
+print(f"Title: {page_title}")
+print(f"URLs: {hrefs}")
+print(f"Texts: {link_texts}")
+`}
+  testCases={[
+    { input: "page_title", expected: "Python Resources", description: "Should extract page title" },
+    { input: "len(hrefs)", expected: "4", description: "Should find 4 links" },
+    { input: "hrefs[0]", expected: "https://docs.python.org", description: "First href should be Python Docs URL" },
+    { input: "link_texts[2]", expected: "Real Python", description: "Third link text should be 'Real Python'" },
+  ]}
+/>
+
+### Exercício 2 — Extrair Dados Estruturados
+
+<PythonRunner
+  title="Extract Structured Data"
+  difficulty="médio"
+  initialCode={`import re
+
+# Mock HTML representing a product listing
+html = """
+<div class="products">
+  <div class="product" data-id="1">
+    <h2 class="name">Widget Pro</h2>
+    <span class="price">$29.99</span>
+    <span class="rating">4.5</span>
+  </div>
+  <div class="product" data-id="2">
+    <h2 class="name">Gadget Ultra</h2>
+    <span class="price">$49.99</span>
+    <span class="rating">4.8</span>
+  </div>
+  <div class="product" data-id="3">
+    <h2 class="name">Doohickey Basic</h2>
+    <span class="price">$9.99</span>
+    <span class="rating">3.9</span>
+  </div>
+</div>
+"""
+
+# Extract a list of product dicts, each containing:
+#   'id' (int), 'name' (str), 'price' (float), 'rating' (float)
+#
+# Hints:
+#   - data-id="(\d+)"  extracts the id
+#   - <h2 class="name">([^<]+)</h2>  extracts the name
+#   - \$(\d+\.\d+)  extracts the price number
+#   - <span class="rating">(\d+\.\d+)</span>  extracts the rating
+#
+# Build the list using zip() or iterate with a loop.
+
+products = []   # replace with your code
+
+for p in products:
+    print(p)
+`}
+  testCases={[
+    { input: "len(products)", expected: "3", description: "Should extract 3 products" },
+    { input: "products[0]['name']", expected: "Widget Pro", description: "First product should be Widget Pro" },
+    { input: "products[1]['price']", expected: "49.99", description: "Gadget Ultra price should be 49.99" },
+    { input: "products[2]['id']", expected: "3", description: "Third product id should be 3" },
+    { input: "products[0]['rating']", expected: "4.5", description: "Widget Pro rating should be 4.5" },
+  ]}
+/>
+
+### Exercício 3 — Pipeline de Limpeza de Dados
+
+<PythonRunner
+  title="Data Cleaning Pipeline"
+  difficulty="médio"
+  initialCode={`import re
+
+# Mock HTML — a table of employees scraped from an HR system
+html = """
+<table>
+  <tr><th>Name</th><th>Department</th><th>Salary</th><th>Email</th></tr>
+  <tr><td>Alice Johnson</td><td>Engineering</td><td>$95,000</td><td>alice@company.com</td></tr>
+  <tr><td>Bob  Smith  </td><td>Marketing  </td><td>$72,000</td><td>bob@company.com</td></tr>
+  <tr><td>Carol  Davis</td><td>Engineering</td><td>$105,000</td><td>carol@company.com</td></tr>
+  <tr><td>Dave Wilson</td><td>HR         </td><td>$68,000</td><td>dave@company.com</td></tr>
+</table>
+"""
+
+# 1. Extract all <td> values using re.findall
+#    Group them into rows of 4 (name, department, salary, email)
+#
+# 2. Clean the data:
+#    - Strip whitespace from all values
+#    - Convert salary from "$95,000" -> 95000 (int)
+#
+# 3. Build a list of dicts: [{'name':..., 'department':..., 'salary':..., 'email':...}]
+#    Store in 'employees'
+#
+# 4. Store 'engineering_salaries': list of salaries for Engineering employees (ints)
+
+employees = []              # replace
+engineering_salaries = []   # replace
+
+for emp in employees:
+    print(emp)
+
+print(f"\\nEngineering salaries: {engineering_salaries}")
+`}
+  testCases={[
+    { input: "len(employees)", expected: "4", description: "Should extract 4 employees" },
+    { input: "employees[0]['name']", expected: "Alice Johnson", description: "Name should be stripped" },
+    { input: "employees[0]['salary']", expected: "95000", description: "Salary should be an int" },
+    { input: "employees[1]['department']", expected: "Marketing", description: "Department should be stripped" },
+    { input: "sorted(engineering_salaries)", expected: "[95000, 105000]", description: "Engineering salaries should be [95000, 105000]" },
+  ]}
+/>
+
+### Exercício 4 — argparse Básico
+
+<PythonRunner
+  title="Basic argparse"
+  difficulty="fácil"
+  initialCode={`import argparse
+
+# Build a CLI parser for a simple file-word-counter tool.
+# The tool should accept:
+#   filename          (positional) — the file to process
+#   --max-words N     (optional int, default=100) — max words to display
+#   --verbose / -v    (flag, store_true) — enable verbose output
+#   --output / -o     (optional str, default="stdout") — output destination
+#
+# After defining the parser, test it by parsing this argument list:
+#   ["report.txt", "--max-words", "50", "-v"]
+# Store the result in 'args'.
+
+parser = argparse.ArgumentParser(description="Count words in a file")
+
+# Add your arguments here
+
+# Parse test arguments (don't change this line)
+args = parser.parse_args(["report.txt", "--max-words", "50", "-v"])
+
+print(f"filename:  {args.filename}")
+print(f"max_words: {args.max_words}")
+print(f"verbose:   {args.verbose}")
+print(f"output:    {args.output}")
+`}
+  testCases={[
+    { input: "args.filename", expected: "report.txt", description: "filename should be 'report.txt'" },
+    { input: "args.max_words", expected: "50", description: "max_words should be 50 (int)" },
+    { input: "args.verbose", expected: "True", description: "verbose flag should be True" },
+    { input: "args.output", expected: "stdout", description: "output should default to 'stdout'" },
+  ]}
+/>
+
+### Exercício 5 — argparse com Subcomandos
+
+<PythonRunner
+  title="argparse with Subcommands"
+  difficulty="médio"
+  initialCode={`import argparse
+
+# Build a CLI parser for a task manager tool with two subcommands:
+#
+#   add <title> [--due DATE] [--priority {low,medium,high}]
+#   list [--status {all,pending,done}] [--sort-by {date,priority}]
+#
+# Test cases to satisfy:
+#   parse_args(["add", "Buy milk"])
+#     -> command="add", title="Buy milk", due=None, priority="medium"
+#
+#   parse_args(["add", "Deploy app", "--due", "2026-03-25", "--priority", "high"])
+#     -> command="add", title="Deploy app", due="2026-03-25", priority="high"
+#
+#   parse_args(["list", "--status", "pending"])
+#     -> command="list", status="pending", sort_by="date"
+
+parser = argparse.ArgumentParser(description="Task manager CLI")
+subparsers = parser.add_subparsers(dest="command")
+
+# Define 'add' subcommand
+add_parser = subparsers.add_parser("add", help="Add a new task")
+# Your arguments here
+
+# Define 'list' subcommand
+list_parser = subparsers.add_parser("list", help="List tasks")
+# Your arguments here
+
+# Test cases
+args_add1 = parser.parse_args(["add", "Buy milk"])
+args_add2 = parser.parse_args(["add", "Deploy app", "--due", "2026-03-25", "--priority", "high"])
+args_list = parser.parse_args(["list", "--status", "pending"])
+
+print(f"add1: command={args_add1.command}, title={args_add1.title}, priority={args_add1.priority}")
+print(f"add2: command={args_add2.command}, due={args_add2.due}, priority={args_add2.priority}")
+print(f"list: command={args_list.command}, status={args_list.status}, sort_by={args_list.sort_by}")
+`}
+  testCases={[
+    { input: "args_add1.command", expected: "add", description: "command should be 'add'" },
+    { input: "args_add1.title", expected: "Buy milk", description: "title should be 'Buy milk'" },
+    { input: "args_add1.priority", expected: "medium", description: "priority should default to 'medium'" },
+    { input: "args_add2.due", expected: "2026-03-25", description: "due date should be set" },
+    { input: "args_add2.priority", expected: "high", description: "priority should be 'high'" },
+    { input: "args_list.status", expected: "pending", description: "status should be 'pending'" },
+    { input: "args_list.sort_by", expected: "date", description: "sort_by should default to 'date'" },
+  ]}
+/>
+
+### Exercício 6 — Parser de Tabela HTML
+
+<PythonRunner
+  title="HTML Table Parser"
+  difficulty="médio"
+  initialCode={`import re
+
+# Write a function parse_html_table(html) that:
+# 1. Extracts the header row (<th> tags) -> list of column names
+# 2. Extracts all data rows (<td> tags) grouped into rows
+# 3. Returns a list of dicts mapping column names to values
+#
+# Ignore the header row when building dicts.
+# Strip whitespace from all values.
+
+def parse_html_table(html):
+    # Your code here
+    pass
+
+# Test with this HTML
+html = """
+<table>
+  <tr><th>City</th><th>Country</th><th>Population</th></tr>
+  <tr><td>Tokyo</td><td>Japan</td><td>13960000</td></tr>
+  <tr><td>London</td><td>UK</td><td>8982000</td></tr>
+  <tr><td>Paris</td><td>France</td><td>2161000</td></tr>
+</table>
+"""
+
+cities = parse_html_table(html)
+for city in cities:
+    print(city)
+`}
+  testCases={[
+    { input: "len(parse_html_table(html))", expected: "3", description: "Should return 3 city rows" },
+    { input: "parse_html_table(html)[0]['City']", expected: "Tokyo", description: "First city should be Tokyo" },
+    { input: "parse_html_table(html)[1]['Country']", expected: "UK", description: "Second country should be UK" },
+    { input: "parse_html_table(html)[2]['Population']", expected: "2161000", description: "Paris population should be 2161000" },
+  ]}
+/>
+
+### Exercício 7 — Pipeline Completo de Scraping + CLI (Bônus)
+
+:::caution Desafio Bônus
+Combina análise de HTML com argparse para construir uma mini ferramenta de extração de dados.
+:::
+
+<PythonRunner
+  title="Scraping + CLI Pipeline"
+  difficulty="difícil"
+  initialCode={`import re
+import argparse
+
+# Mock HTML: a news site with articles
+html = """
+<div class="articles">
+  <article data-category="tech">
+    <h2><a href="/tech/python-3-14">Python 3.14 Released</a></h2>
+    <span class="author">Alice Johnson</span>
+    <span class="date">2026-03-15</span>
+    <p class="summary">Major improvements to the type system and performance.</p>
+  </article>
+  <article data-category="science">
+    <h2><a href="/science/mars-mission">Mars Mission Update</a></h2>
+    <span class="author">Bob Smith</span>
+    <span class="date">2026-03-14</span>
+    <p class="summary">New discoveries from the Perseverance rover.</p>
+  </article>
+  <article data-category="tech">
+    <h2><a href="/tech/ai-models">AI Model Benchmarks 2026</a></h2>
+    <span class="author">Carol Davis</span>
+    <span class="date">2026-03-13</span>
+    <p class="summary">A comprehensive comparison of the latest AI models.</p>
+  </article>
+  <article data-category="science">
+    <h2><a href="/science/climate">Climate Report 2026</a></h2>
+    <span class="author">Dave Wilson</span>
+    <span class="date">2026-03-12</span>
+    <p class="summary">Annual global climate assessment findings.</p>
+  </article>
+</div>
+"""
+
+# PART 1: Write scrape_articles(html) that returns a list of dicts:
+#   {'title': ..., 'url': ..., 'author': ..., 'date': ..., 'category': ..., 'summary': ...}
+
+def scrape_articles(html):
+    # Your code here
+    pass
+
+# PART 2: Build a CLI parser for the scraper tool:
+#   --category CATEGORY   filter by category (default: show all)
+#   --sort-by {date,title} sort results (default: date)
+#   --limit N             max articles to show (default: 10, type: int)
+#   --format {text,json}  output format (default: text)
+
+parser = argparse.ArgumentParser(description="News scraper CLI")
+# Add arguments here
+
+def filter_and_format(articles, args):
+    """Filter articles based on CLI args, sort, and return up to --limit items."""
+    result = articles
+    if args.category:
+        result = [a for a in result if a['category'] == args.category]
+    if args.sort_by == 'title':
+        result = sorted(result, key=lambda a: a['title'])
+    else:
+        result = sorted(result, key=lambda a: a['date'], reverse=True)
+    return result[:args.limit]
+
+# Test
+articles = scrape_articles(html)
+args = parser.parse_args(["--category", "tech", "--limit", "5"])
+filtered = filter_and_format(articles, args)
+for a in filtered:
+    print(f"[{a['date']}] {a['title']} — {a['author']}")
+`}
+  testCases={[
+    { input: "len(scrape_articles(html))", expected: "4", description: "Should scrape all 4 articles" },
+    { input: "scrape_articles(html)[0]['title']", expected: "Python 3.14 Released", description: "First article title" },
+    { input: "scrape_articles(html)[0]['category']", expected: "tech", description: "First article category should be tech" },
+    { input: "len(filter_and_format(scrape_articles(html), parser.parse_args(['--category', 'tech'])))", expected: "2", description: "Filter by tech should return 2 articles" },
+    { input: "parser.parse_args(['--limit', '3']).limit", expected: "3", description: "--limit should be parsed as int" },
+  ]}
+/>

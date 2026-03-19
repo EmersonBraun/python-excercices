@@ -1,0 +1,689 @@
+---
+title: Herança & Métodos Dunder
+sidebar_label: Herança & Métodos Dunder
+sidebar_position: 5
+---
+
+# Herança & Métodos Dunder
+
+Neste módulo você vai aprender como o sistema de **herança** do Python permite que classes compartilhem e estendam comportamentos, e como os **métodos dunder (duplo sublinhado)** permitem integrar seus objetos perfeitamente à linguagem Python — tornando-os imprimíveis, comparáveis e iteráveis. Ao final você será capaz de projetar hierarquias de classes limpas e escrever objetos Pythônicos que funcionam naturalmente com funções e operadores embutidos.
+
+## Objetivos de Aprendizagem
+
+- Usar `super()` para chamar métodos da classe pai
+- Configurar herança simples e múltipla
+- Entender a Ordem de Resolução de Métodos (MRO) do Python
+- Implementar `__str__` e `__repr__` para saída legível
+- Usar `__eq__`, `__lt__` e outros dunders de comparação
+- Sobrecarregar operadores com `__add__`, `__mul__`, etc.
+- Fazer objetos funcionarem com `len()` e indexação via `__len__` e `__getitem__`
+
+---
+
+## Teoria
+
+### `super()` e Herança Simples
+
+`super()` fornece um proxy que delega chamadas de método à classe pai, garantindo cadeias de inicialização corretas:
+
+```python
+class Animal:
+    def __init__(self, name, sound):
+        self.name = name
+        self.sound = sound
+
+    def speak(self):
+        return f"{self.name} says {self.sound}"
+
+class Dog(Animal):
+    def __init__(self, name, breed):
+        super().__init__(name, sound="Woof")  # chama __init__ do pai
+        self.breed = breed
+
+    def fetch(self):
+        return f"{self.name} fetches the ball!"
+
+d = Dog("Rex", "Labrador")
+print(d.speak())   # Rex says Woof
+print(d.fetch())   # Rex fetches the ball!
+```
+
+:::tip
+Sempre chame `super().__init__()` no `__init__` da sua subclasse quando o pai tiver estado para inicializar. Esquecer disso deixa os atributos do pai indefinidos.
+:::
+
+Consulte [Herança](https://docs.python.org/3/tutorial/classes.html#inheritance) no Tutorial Python.
+
+### Herança Múltipla e MRO
+
+Python suporta herança múltipla. A **Ordem de Resolução de Métodos** (MRO) define qual classe é pesquisada primeiro ao buscar um atributo:
+
+```python
+class A:
+    def hello(self):
+        return "Hello from A"
+
+class B(A):
+    def hello(self):
+        return "Hello from B"
+
+class C(A):
+    def hello(self):
+        return "Hello from C"
+
+class D(B, C):    # herda de B e C
+    pass
+
+print(D().hello())       # Hello from B  (B vem antes de C no MRO)
+print(D.__mro__)         # (D, B, C, A, object)
+```
+
+Python usa o algoritmo de **linearização C3** para calcular o MRO. O atributo `__mro__` e o método `ClassName.mro()` permitem inspecioná-lo.
+
+:::note
+A herança múltipla é poderosa, mas pode tornar o código difícil de seguir. Use-a deliberadamente — padrões comuns incluem mixins (classes pequenas que adicionam um único comportamento).
+:::
+
+Consulte [Herança Múltipla](https://docs.python.org/3/tutorial/classes.html#multiple-inheritance).
+
+### `__str__` e `__repr__`
+
+- `__str__` é chamado por `str()` e `print()` — destinado à saída legível por humanos.
+- `__repr__` é chamado por `repr()` e é o fallback quando `__str__` não está definido — destinado a desenvolvedores e depuração.
+
+```python
+class Point:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+
+    def __repr__(self):
+        return f"Point({self.x}, {self.y})"
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+p = Point(3, 4)
+print(str(p))    # (3, 4)
+print(repr(p))   # Point(3, 4)
+```
+
+:::tip
+Implemente `__repr__` primeiro — é mais importante para depuração. `__str__` usa `__repr__` como padrão quando não está explicitamente definido.
+:::
+
+### Métodos Dunder de Comparação
+
+Implemente estes para suportar operadores de comparação:
+
+| Dunder | Operador |
+|--------|----------|
+| `__eq__` | `==` |
+| `__ne__` | `!=` |
+| `__lt__` | `<` |
+| `__le__` | `<=` |
+| `__gt__` | `>` |
+| `__ge__` | `>=` |
+
+```python
+from functools import total_ordering
+
+@total_ordering
+class Version:
+    def __init__(self, major, minor):
+        self.major, self.minor = major, minor
+
+    def __eq__(self, other):
+        return (self.major, self.minor) == (other.major, other.minor)
+
+    def __lt__(self, other):
+        return (self.major, self.minor) < (other.major, other.minor)
+```
+
+`@total_ordering` preenche os métodos de comparação restantes a partir de apenas `__eq__` e `__lt__`. Consulte [functools.total_ordering](https://docs.python.org/3/library/functools.html#functools.total_ordering).
+
+### `__len__` e `__getitem__`
+
+Estes fazem objetos funcionarem com `len()` e indexação por colchetes `obj[i]`:
+
+```python
+class Playlist:
+    def __init__(self):
+        self._songs = []
+
+    def add(self, song):
+        self._songs.append(song)
+
+    def __len__(self):
+        return len(self._songs)
+
+    def __getitem__(self, index):
+        return self._songs[index]
+
+pl = Playlist()
+pl.add("Song A"); pl.add("Song B")
+print(len(pl))    # 2
+print(pl[0])      # Song A
+```
+
+Consulte [Modelo de Dados — Nomes de Métodos Especiais](https://docs.python.org/3/reference/datamodel.html#special-method-names) para a referência completa.
+
+### Sobrecarga de Operadores
+
+```python
+class Vector:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+
+    def __add__(self, other):
+        return Vector(self.x + other.x, self.y + other.y)
+
+    def __mul__(self, scalar):
+        return Vector(self.x * scalar, self.y * scalar)
+
+    def __repr__(self):
+        return f"Vector({self.x}, {self.y})"
+
+v1 = Vector(1, 2)
+v2 = Vector(3, 4)
+print(v1 + v2)      # Vector(4, 6)
+print(v1 * 3)       # Vector(3, 6)
+```
+
+---
+
+## Demonstração Visual
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-from-zero-to-hero/demos/inheritance-hierarchy/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Inheritance Hierarchy Visualization"
+  />
+</div>
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Hierarquia Animal
+
+<PythonRunner
+  title="Animal Hierarchy"
+  difficulty="easy"
+  initialCode={`# Build a simple animal hierarchy.
+#
+# Animal:
+#   - __init__(self, name)
+#   - speak(self) → raises NotImplementedError
+#   - __str__ → "Animal: <name>"
+#
+# Dog(Animal):
+#   - speak(self) → "<name> says Woof!"
+#
+# Cat(Animal):
+#   - speak(self) → "<name> says Meow!"
+
+class Animal:
+    def __init__(self, name):
+        self.name = name
+
+    def speak(self):
+        raise NotImplementedError
+
+    def __str__(self):
+        return f"Animal: {self.name}"
+
+class Dog(Animal):
+    def speak(self):
+        # Your code here
+        pass
+
+class Cat(Animal):
+    def speak(self):
+        # Your code here
+        pass
+
+dog = Dog("Rex")
+cat = Cat("Whiskers")
+print(dog.speak())   # Rex says Woof!
+print(cat.speak())   # Whiskers says Meow!
+print(str(dog))      # Animal: Rex
+`}
+  testCases={[
+    { input: "Dog('Rex').speak()", expected: "Rex says Woof!", description: "Dog.speak() should say Woof" },
+    { input: "Cat('Luna').speak()", expected: "Luna says Meow!", description: "Cat.speak() should say Meow" },
+    { input: "str(Dog('Buddy'))", expected: "Animal: Buddy", description: "__str__ should show Animal: name" },
+    { input: "isinstance(Dog('x'), Animal)", expected: "True", description: "Dog should be an instance of Animal" },
+  ]}
+/>
+
+### Exercício 2 — `super()` em Ação
+
+<PythonRunner
+  title="super() in Action"
+  difficulty="easy"
+  initialCode={`# Vehicle → Car → ElectricCar hierarchy.
+# Each subclass extends __init__ with extra attributes.
+#
+# Vehicle.__init__(make, model, year)
+# Car(Vehicle).__init__(make, model, year, doors)
+# ElectricCar(Car).__init__(make, model, year, doors, battery_kwh)
+#
+# ElectricCar.describe() should return:
+# "<year> <make> <model>, <doors> doors, <battery_kwh>kWh battery"
+
+class Vehicle:
+    def __init__(self, make, model, year):
+        self.make = make
+        self.model = model
+        self.year = year
+
+    def describe(self):
+        return f"{self.year} {self.make} {self.model}"
+
+class Car(Vehicle):
+    def __init__(self, make, model, year, doors):
+        super().__init__(make, model, year)
+        self.doors = doors
+
+    def describe(self):
+        return f"{super().describe()}, {self.doors} doors"
+
+class ElectricCar(Car):
+    def __init__(self, make, model, year, doors, battery_kwh):
+        # Your code here — call super().__init__ with the right args
+        pass
+
+    def describe(self):
+        # Your code here
+        pass
+
+ec = ElectricCar("Tesla", "Model 3", 2024, 4, 75)
+print(ec.describe())
+# 2024 Tesla Model 3, 4 doors, 75kWh battery
+`}
+  testCases={[
+    { input: "ElectricCar('Tesla','Model 3',2024,4,75).describe()", expected: "2024 Tesla Model 3, 4 doors, 75kWh battery", description: "describe() should include all details" },
+    { input: "ElectricCar('Tesla','Model 3',2024,4,75).make", expected: "Tesla", description: "make attribute should be set by super()" },
+    { input: "isinstance(ElectricCar('T','M',2020,4,50), Vehicle)", expected: "True", description: "ElectricCar should be an instance of Vehicle" },
+  ]}
+/>
+
+### Exercício 3 — `__repr__` e `__str__`
+
+<PythonRunner
+  title="__repr__ and __str__"
+  difficulty="easy"
+  initialCode={`# Define a Point class with:
+# - __init__(self, x, y)
+# - __repr__ → "Point(x=3, y=4)"
+# - __str__  → "(3, 4)"
+# - __eq__   → two Points are equal if x and y are equal
+# - distance_to(self, other) → Euclidean distance (use ** 0.5 for sqrt)
+
+class Point:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        pass
+
+    def __str__(self):
+        pass
+
+    def __eq__(self, other):
+        pass
+
+    def distance_to(self, other):
+        pass
+
+p1 = Point(0, 0)
+p2 = Point(3, 4)
+print(repr(p1))           # Point(x=0, y=0)
+print(str(p2))            # (3, 4)
+print(p1.distance_to(p2)) # 5.0
+print(p1 == Point(0, 0))  # True
+`}
+  testCases={[
+    { input: "repr(Point(3, 4))", expected: "Point(x=3, y=4)", description: "__repr__ should match expected format" },
+    { input: "str(Point(3, 4))", expected: "(3, 4)", description: "__str__ should match expected format" },
+    { input: "Point(0,0).distance_to(Point(3,4))", expected: "5.0", description: "distance_to should return 5.0 for (0,0)→(3,4)" },
+    { input: "Point(1,2) == Point(1,2)", expected: "True", description: "__eq__ should return True for identical points" },
+  ]}
+/>
+
+### Exercício 4 — Cartas Comparáveis
+
+<PythonRunner
+  title="Comparable Playing Cards"
+  difficulty="medium"
+  initialCode={`# Implement a playing Card class.
+# Ranks: 2..10, J, Q, K, A  (values 2..14)
+# Suits: clubs, diamonds, hearts, spades
+#
+# Card:
+# - __init__(self, rank, suit)  — rank is an int 2-14, suit is a string
+# - __str__  → "A of spades" (convert 11→J, 12→Q, 13→K, 14→A)
+# - __repr__ → "Card(14, 'spades')"
+# - __eq__   → equal if same rank (suit ignored)
+# - __lt__   → compare by rank only
+# - __le__, __gt__, __ge__ provided automatically by @total_ordering
+
+from functools import total_ordering
+
+RANK_NAMES = {11: "J", 12: "Q", 13: "K", 14: "A"}
+
+@total_ordering
+class Card:
+    def __init__(self, rank, suit):
+        self.rank = rank
+        self.suit = suit
+
+    def __str__(self):
+        name = RANK_NAMES.get(self.rank, str(self.rank))
+        return f"{name} of {self.suit}"
+
+    def __repr__(self):
+        # Your code here
+        pass
+
+    def __eq__(self, other):
+        # Your code here
+        pass
+
+    def __lt__(self, other):
+        # Your code here
+        pass
+
+cards = [Card(10, "hearts"), Card(14, "spades"), Card(7, "clubs")]
+cards.sort()
+print([str(c) for c in cards])  # ['7 of clubs', '10 of hearts', 'A of spades']
+print(Card(14, "hearts") > Card(10, "clubs"))  # True
+`}
+  testCases={[
+    { input: "str(Card(14, 'spades'))", expected: "A of spades", description: "__str__ should convert 14 to 'A'" },
+    { input: "str(Card(11, 'hearts'))", expected: "J of hearts", description: "__str__ should convert 11 to 'J'" },
+    { input: "Card(14, 'hearts') > Card(10, 'clubs')", expected: "True", description: "Ace should be greater than 10" },
+    { input: "Card(5, 'spades') == Card(5, 'hearts')", expected: "True", description: "Cards with same rank should be equal" },
+  ]}
+/>
+
+### Exercício 5 — Lista Personalizada
+
+<PythonRunner
+  title="Custom List with Dunder Methods"
+  difficulty="medium"
+  initialCode={`# Implement a NumberList class that wraps a list and adds statistics.
+#
+# NumberList:
+# - __init__(self, items=None)  — items defaults to []
+# - __len__       → number of elements
+# - __getitem__   → support indexing
+# - __repr__      → "NumberList([1, 2, 3])"
+# - __add__(other) → return a new NumberList combining both lists
+# - mean(self)    → average of elements (raise ValueError if empty)
+# - maximum(self) → max value (raise ValueError if empty)
+# - minimum(self) → min value (raise ValueError if empty)
+
+class NumberList:
+    def __init__(self, items=None):
+        self._data = list(items) if items else []
+
+    def __len__(self):
+        pass
+
+    def __getitem__(self, index):
+        pass
+
+    def __repr__(self):
+        pass
+
+    def __add__(self, other):
+        pass
+
+    def mean(self):
+        pass
+
+    def maximum(self):
+        pass
+
+    def minimum(self):
+        pass
+
+nl = NumberList([3, 1, 4, 1, 5, 9, 2, 6])
+print(len(nl))        # 8
+print(nl[0])          # 3
+print(nl.mean())      # 3.875
+print(nl.maximum())   # 9
+print(nl.minimum())   # 1
+nl2 = NumberList([7, 8])
+print(nl + nl2)       # NumberList([3, 1, 4, 1, 5, 9, 2, 6, 7, 8])
+`}
+  testCases={[
+    { input: "len(NumberList([1,2,3]))", expected: "3", description: "__len__ should return element count" },
+    { input: "NumberList([1,2,3])[1]", expected: "2", description: "__getitem__ should return item at index" },
+    { input: "NumberList([1,2,3]).mean()", expected: "2.0", description: "mean() of [1,2,3] should be 2.0" },
+    { input: "repr(NumberList([1,2]))", expected: "NumberList([1, 2])", description: "__repr__ should match expected format" },
+  ]}
+/>
+
+### Exercício 6 — Mixin Serializável
+
+<PythonRunner
+  title="Serializable Mixin"
+  difficulty="medium"
+  initialCode={`# Define a SerializableMixin that adds to_dict() and from_dict() to any class.
+#
+# SerializableMixin:
+# - to_dict(self) → returns a dict of public instance attributes (no leading _)
+# - classmethod from_dict(cls, d) → creates cls(**d)
+#
+# Test with a Product class: Product(name, price, category)
+
+class SerializableMixin:
+    def to_dict(self):
+        # Return a dict of public instance attributes (keys without leading _)
+        # Hint: self.__dict__ contains all instance attributes
+        # Your code here
+        pass
+
+    @classmethod
+    def from_dict(cls, d):
+        # Your code here
+        pass
+
+class Product(SerializableMixin):
+    def __init__(self, name, price, category):
+        self.name = name
+        self.price = price
+        self.category = category
+
+    def __repr__(self):
+        return f"Product({self.name!r}, {self.price}, {self.category!r})"
+
+p = Product("Widget", 9.99, "tools")
+d = p.to_dict()
+print(d)   # {'name': 'Widget', 'price': 9.99, 'category': 'tools'}
+
+p2 = Product.from_dict(d)
+print(p2)  # Product('Widget', 9.99, 'tools')
+`}
+  testCases={[
+    { input: "Product('Widget', 9.99, 'tools').to_dict()['name']", expected: "Widget", description: "to_dict() should include name" },
+    { input: "Product('Widget', 9.99, 'tools').to_dict()['price']", expected: "9.99", description: "to_dict() should include price" },
+    { input: "Product.from_dict({'name':'X','price':1.0,'category':'c'}).name", expected: "X", description: "from_dict() should create instance with correct name" },
+  ]}
+/>
+
+### Exercício 7 — Vetor com Sobrecarga de Operadores
+
+<PythonRunner
+  title="Vector Math"
+  difficulty="hard"
+  initialCode={`# Implement a 2D Vector class with full operator support.
+#
+# Vector(x, y):
+# - __repr__   → "Vector(3, 4)"
+# - __str__    → "(3, 4)"
+# - __eq__     → component-wise equality
+# - __add__    → component-wise addition
+# - __sub__    → component-wise subtraction
+# - __mul__    → scalar multiplication (Vector * scalar)
+# - __rmul__   → reverse scalar multiplication (scalar * Vector)
+# - __neg__    → negate both components
+# - __abs__    → magnitude (sqrt(x^2 + y^2))
+# - dot(self, other) → dot product: x1*x2 + y1*y2
+
+class Vector:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __repr__(self):
+        return f"Vector({self.x}, {self.y})"
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+    def __eq__(self, other):
+        pass
+
+    def __add__(self, other):
+        pass
+
+    def __sub__(self, other):
+        pass
+
+    def __mul__(self, scalar):
+        pass
+
+    def __rmul__(self, scalar):
+        pass
+
+    def __neg__(self):
+        pass
+
+    def __abs__(self):
+        pass
+
+    def dot(self, other):
+        pass
+
+v1 = Vector(3, 4)
+v2 = Vector(1, 2)
+print(v1 + v2)     # (4, 6)
+print(v1 - v2)     # (2, 2)
+print(v1 * 2)      # (6, 8)
+print(3 * v2)      # (3, 6)
+print(-v1)         # (-3, -4)
+print(abs(v1))     # 5.0
+print(v1.dot(v2))  # 11
+`}
+  testCases={[
+    { input: "Vector(3,4) + Vector(1,2)", expected: "(4, 6)", description: "__add__ should add components" },
+    { input: "Vector(3,4) - Vector(1,2)", expected: "(2, 2)", description: "__sub__ should subtract components" },
+    { input: "Vector(3,4) * 2", expected: "(6, 8)", description: "__mul__ should scale components" },
+    { input: "abs(Vector(3,4))", expected: "5.0", description: "__abs__ should return magnitude" },
+    { input: "Vector(3,4).dot(Vector(1,2))", expected: "11", description: "dot product of (3,4)·(1,2) should be 11" },
+  ]}
+/>
+
+### Exercício 8 — Hierarquia de Formas com Mixins (Bônus)
+
+:::caution Desafio Antecipado
+Este exercício combina herança múltipla, MRO e métodos dunder. Está incluído como um **desafio bônus** para quem quiser dominar o modelo de objetos do Python.
+:::
+
+<PythonRunner
+  title="Shape Hierarchy with Mixins"
+  difficulty="hard"
+  initialCode={`# Build a class hierarchy that uses mixins.
+#
+# Drawable mixin: draw(self) → "Drawing <classname>"
+# Resizable mixin: resize(self, factor) → new instance scaled by factor
+#
+# Shape base: __init__(color), area() raises NotImplementedError
+#
+# Rectangle(Shape, Drawable, Resizable):
+#   __init__(w, h, color), area() = w*h,
+#   resize(factor) → new Rectangle(w*factor, h*factor, color)
+#
+# Circle(Shape, Drawable, Resizable):
+#   __init__(r, color), area() = PI*r^2,
+#   resize(factor) → new Circle(r*factor, color)
+#
+# Also implement:
+#   Rectangle.__add__(other) → new Rectangle whose area equals
+#   the sum of both rectangles' areas (square: side = sqrt(area))
+
+class Drawable:
+    def draw(self):
+        return f"Drawing {type(self).__name__}"
+
+class Resizable:
+    def resize(self, factor):
+        raise NotImplementedError
+
+class Shape:
+    def __init__(self, color="white"):
+        self.color = color
+
+    def area(self):
+        raise NotImplementedError
+
+class Rectangle(Shape, Drawable, Resizable):
+    def __init__(self, width, height, color="white"):
+        # Your code here
+        pass
+
+    def area(self):
+        pass
+
+    def resize(self, factor):
+        pass
+
+    def __add__(self, other):
+        pass
+
+    def __repr__(self):
+        return f"Rectangle({self.width}, {self.height})"
+
+class Circle(Shape, Drawable, Resizable):
+    PI = 3.14159
+
+    def __init__(self, radius, color="white"):
+        # Your code here
+        pass
+
+    def area(self):
+        pass
+
+    def resize(self, factor):
+        pass
+
+    def __repr__(self):
+        return f"Circle({self.radius})"
+
+r = Rectangle(3, 4)
+c = Circle(5)
+print(r.draw())            # Drawing Rectangle
+print(r.area())            # 12
+r2 = r.resize(2)
+print(r2)                  # Rectangle(6, 8)
+combined = r + Rectangle(4, 3)
+print(round(combined.width, 4))  # 4.899 (sqrt(24))
+`}
+  testCases={[
+    { input: "Rectangle(3,4).area()", expected: "12", description: "Rectangle area should be width * height" },
+    { input: "Rectangle(3,4).draw()", expected: "Drawing Rectangle", description: "Drawable mixin should work" },
+    { input: "Rectangle(3,4).resize(2).width", expected: "6", description: "resize() should scale width" },
+    { input: "isinstance(Rectangle(1,1), Shape)", expected: "True", description: "Rectangle should be an instance of Shape" },
+  ]}
+/>

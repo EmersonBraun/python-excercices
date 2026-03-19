@@ -1,0 +1,318 @@
+---
+title: Bucles e Iteración
+sidebar_label: Bucles e Iteración
+sidebar_position: 4
+---
+
+# Bucles e Iteración
+
+Los bucles te permiten repetir un bloque de código sin copiarlo y pegarlo. En este módulo aprenderás las dos construcciones de bucle de Python — `for` y `while` — junto con las herramientas que hacen la iteración más expresiva: `range()`, `enumerate()`, `break`, `continue` y bucles anidados.
+
+## Objetivos de Aprendizaje
+
+- Escribir bucles `for` sobre secuencias y objetos `range()`
+- Escribir bucles `while` con condiciones de terminación correctas
+- Usar `break` para salir de un bucle antes de tiempo y `continue` para saltar una iteración
+- Usar `enumerate()` para iterar con un índice
+- Construir bucles anidados para problemas multidimensionales
+
+---
+
+## Teoría
+
+### Bucles for
+
+Un bucle `for` itera sobre cualquier **iterable** — una lista, cadena, tupla, rango, etc.:
+
+```python
+fruits = ["apple", "banana", "cherry"]
+for fruit in fruits:
+    print(fruit)
+
+for char in "Python":
+    print(char)
+```
+
+:::tip
+La variable del bucle (`fruit`, `char`) es solo una variable regular. Puedes llamarla como quieras, pero elige algo con significado.
+:::
+
+### range()
+
+`range()` genera una secuencia de enteros sin almacenarlos todos en memoria:
+
+```python
+range(5)          # 0, 1, 2, 3, 4
+range(1, 6)       # 1, 2, 3, 4, 5
+range(0, 10, 2)   # 0, 2, 4, 6, 8  (step of 2)
+range(10, 0, -1)  # 10, 9, ..., 1  (count down)
+```
+
+Consulta [range()](https://docs.python.org/3/library/stdtypes.html#ranges) en la documentación.
+
+### Bucles while
+
+Un bucle `while` se repite mientras su condición sea `True`:
+
+```python
+count = 0
+while count < 5:
+    print(count)
+    count += 1
+```
+
+:::note
+Siempre asegúrate de que la condición del bucle eventualmente se vuelva `False`, de lo contrario crearás un **bucle infinito**.
+:::
+
+### break y continue
+
+- `break` — sale inmediatamente del bucle que lo contiene
+- `continue` — salta el resto de la iteración actual y pasa a la siguiente
+
+```python
+for n in range(10):
+    if n == 5:
+        break       # stop when n reaches 5
+    if n % 2 == 0:
+        continue    # skip even numbers
+    print(n)        # prints 1, 3
+```
+
+Consulta [break y continue](https://docs.python.org/3/tutorial/controlflow.html#break-and-continue-statements) en el tutorial.
+
+### enumerate()
+
+Cuando necesitas tanto el índice como el valor durante un bucle, usa `enumerate()`:
+
+```python
+colors = ["red", "green", "blue"]
+for i, color in enumerate(colors):
+    print(f"{i}: {color}")
+# 0: red
+# 1: green
+# 2: blue
+
+# Start counting from 1:
+for i, color in enumerate(colors, start=1):
+    print(f"{i}. {color}")
+```
+
+### Bucles Anidados
+
+Puedes colocar un bucle dentro de otro. El bucle interior completa todas sus iteraciones por cada iteración individual del bucle exterior:
+
+```python
+for row in range(3):
+    for col in range(3):
+        print(f"({row},{col})", end=" ")
+    print()   # newline after each row
+```
+
+:::tip
+Cuidado con el rendimiento: si ambos bucles se ejecutan `n` veces, el cuerpo se ejecuta `n²` veces.
+:::
+
+Consulta el [Tutorial de Python — Instrucciones for](https://docs.python.org/3/tutorial/controlflow.html#for-statements) para más información.
+
+---
+
+## Demo Visual
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-from-zero-to-hero/demos/bubble-sort/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Bubble Sort Visualization"
+  />
+</div>
+
+---
+
+## Ejercicios
+
+:::info Cómo usar estos ejercicios
+Edita el código en cada panel y haz clic en **Run** (o presiona Ctrl+Enter / Cmd+Enter) para ejecutarlo. Si hay casos de prueba definidos, los resultados aparecen debajo de la salida.
+:::
+
+### Ejercicio 1 — Suma con for
+
+<PythonRunner
+  title="Sum with for"
+  difficulty="fácil"
+  initialCode={`# Use a for loop to compute the sum of all integers from 1 to 10 (inclusive).
+# Store the result in total.
+
+total = 0
+# Your loop here
+
+print(total)
+`}
+  testCases={[
+    { input: "total", expected: "55", description: "Sum of 1..10 should be 55" },
+  ]}
+/>
+
+### Ejercicio 2 — Cuenta Regresiva con range()
+
+<PythonRunner
+  title="range() Countdown"
+  difficulty="fácil"
+  initialCode={`# Use range() to count DOWN from 5 to 1 and collect the numbers in a list.
+# countdown should be [5, 4, 3, 2, 1]
+
+countdown = []
+# Your loop here
+
+print(countdown)
+`}
+  testCases={[
+    { input: "countdown", expected: "[5, 4, 3, 2, 1]", description: "countdown should be [5, 4, 3, 2, 1]" },
+  ]}
+/>
+
+### Ejercicio 3 — Bucle while
+
+<PythonRunner
+  title="while Loop"
+  difficulty="fácil"
+  initialCode={`# Use a while loop to repeatedly halve a number until it falls below 1.
+# Start with n = 64. Each iteration: append n to the list steps, then halve it.
+# Stop when n < 1.
+
+n = 64
+steps = []
+# Your while loop here
+
+print(steps)
+`}
+  testCases={[
+    { input: "steps", expected: "[64, 32.0, 16.0, 8.0, 4.0, 2.0, 1.0]", description: "steps should be [64, 32.0, 16.0, 8.0, 4.0, 2.0, 1.0]" },
+  ]}
+/>
+
+### Ejercicio 4 — enumerate()
+
+<PythonRunner
+  title="enumerate()"
+  difficulty="fácil"
+  initialCode={`# Use enumerate() to build a numbered list of items.
+# For each item in menu, create a string "{i}. {item}" (1-based index)
+# and append it to numbered_menu.
+
+menu = ["Burger", "Pizza", "Salad", "Pasta"]
+numbered_menu = []
+# Your loop here
+
+print(numbered_menu)
+`}
+  testCases={[
+    { input: "numbered_menu[0]", expected: "1. Burger", description: "First item should be '1. Burger'" },
+    { input: "numbered_menu[3]", expected: "4. Pasta", description: "Last item should be '4. Pasta'" },
+    { input: "len(numbered_menu)", expected: "4", description: "Should have 4 entries" },
+  ]}
+/>
+
+### Ejercicio 5 — break y continue
+
+<PythonRunner
+  title="break and continue"
+  difficulty="medio"
+  initialCode={`# Given the list of numbers below:
+numbers = [3, 7, 2, 9, 4, 11, 6, 8, 1, 5]
+
+# 1. Use a loop with 'continue' to build odds — a list of only odd numbers.
+# 2. Use a loop with 'break' to find first_over_8 — the first number > 8.
+#    Set first_over_8 to None if no such number exists.
+
+odds = []
+first_over_8 = None
+
+# Your code here
+
+print("Odds:", odds)
+print("First over 8:", first_over_8)
+`}
+  testCases={[
+    { input: "odds", expected: "[3, 7, 9, 11, 1, 5]", description: "odds should be [3, 7, 9, 11, 1, 5]" },
+    { input: "first_over_8", expected: "9", description: "First number > 8 in the list is 9" },
+  ]}
+/>
+
+### Ejercicio 6 — Tabla de Multiplicar
+
+<PythonRunner
+  title="Multiplication Table"
+  difficulty="medio"
+  initialCode={`# Build a 3x3 multiplication table using nested loops.
+# table should be a list of lists where table[i][j] = (i+1) * (j+1)
+# Example: table[0] = [1, 2, 3], table[1] = [2, 4, 6], table[2] = [3, 6, 9]
+
+table = []
+# Your nested loop here
+
+for row in table:
+    print(row)
+`}
+  testCases={[
+    { input: "table[0]", expected: "[1, 2, 3]", description: "First row should be [1, 2, 3]" },
+    { input: "table[1]", expected: "[2, 4, 6]", description: "Second row should be [2, 4, 6]" },
+    { input: "table[2]", expected: "[3, 6, 9]", description: "Third row should be [3, 6, 9]" },
+  ]}
+/>
+
+### Ejercicio 7 — FizzBuzz
+
+<PythonRunner
+  title="FizzBuzz"
+  difficulty="medio"
+  initialCode={`# Classic FizzBuzz: iterate over 1 to 20 (inclusive).
+# Append to results:
+#   "FizzBuzz" if divisible by both 3 and 5
+#   "Fizz"     if divisible by 3 only
+#   "Buzz"     if divisible by 5 only
+#   the number  otherwise (as an int)
+
+results = []
+# Your loop here
+
+print(results)
+`}
+  testCases={[
+    { input: "results[0]", expected: "1", description: "1 is just 1" },
+    { input: "results[2]", expected: "Fizz", description: "3 is Fizz" },
+    { input: "results[4]", expected: "Buzz", description: "5 is Buzz" },
+    { input: "results[14]", expected: "FizzBuzz", description: "15 is FizzBuzz" },
+    { input: "len(results)", expected: "20", description: "Should have 20 entries" },
+  ]}
+/>
+
+### Ejercicio 8 — find_primes (Bonus)
+
+:::caution Desafío Anticipado
+Este ejercicio usa bucles anidados y condicionales juntos. Está incluido como un **desafío bonus** para quienes quieran ir más lejos.
+:::
+
+<PythonRunner
+  title="find_primes"
+  difficulty="difícil"
+  initialCode={`# Write find_primes(n) that returns a list of all prime numbers up to n (inclusive).
+# A prime number is a number greater than 1 with no divisors other than 1 and itself.
+#
+# Example: find_primes(20) -> [2, 3, 5, 7, 11, 13, 17, 19]
+
+def find_primes(n):
+    pass
+
+print(find_primes(20))
+print(find_primes(2))
+`}
+  testCases={[
+    { input: "find_primes(20)", expected: "[2, 3, 5, 7, 11, 13, 17, 19]", description: "Primes up to 20" },
+    { input: "find_primes(2)", expected: "[2]", description: "find_primes(2) should return [2]" },
+    { input: "find_primes(1)", expected: "[]", description: "find_primes(1) should return []" },
+    { input: "len(find_primes(50))", expected: "15", description: "There are 15 primes up to 50" },
+  ]}
+/>

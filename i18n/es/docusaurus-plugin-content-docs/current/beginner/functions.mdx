@@ -1,0 +1,396 @@
+---
+title: Funciones
+sidebar_label: Funciones
+sidebar_position: 6
+---
+
+# Funciones
+
+Las funciones son los bloques de construcción fundamentales del código reutilizable. En este módulo aprenderás a definir funciones con `def`, trabajar con parámetros y valores de retorno, usar argumentos predeterminados y firmas flexibles con `*args`/`**kwargs`, escribir funciones **lambda** concisas, y entender el **alcance** de las variables. También aprenderás a documentar tus funciones con **docstrings**.
+
+## Objetivos de Aprendizaje
+
+- Definir y llamar funciones usando `def`
+- Entender parámetros posicionales, de palabra clave y predeterminados
+- Usar `*args` y `**kwargs` para firmas de funciones flexibles
+- Escribir expresiones lambda para líneas simples
+- Explicar el alcance local vs. global
+- Escribir docstrings que describan el comportamiento de la función
+
+---
+
+## Teoría
+
+### Definición de Funciones
+
+Usa la palabra clave `def`, seguida del nombre de la función, los parámetros entre paréntesis y dos puntos. El cuerpo está indentado:
+
+```python
+def greet(name):
+    print(f"Hello, {name}!")
+
+greet("Alice")   # Hello, Alice!
+```
+
+Una función sin una instrucción `return` explícita devuelve `None`.
+
+### Valores de Retorno
+
+Usa `return` para enviar un valor de regreso al que llama:
+
+```python
+def add(a, b):
+    return a + b
+
+result = add(3, 4)   # result = 7
+```
+
+Una función puede devolver **múltiples valores** como una tupla:
+
+```python
+def min_max(lst):
+    return min(lst), max(lst)
+
+lo, hi = min_max([3, 1, 4, 1, 5])   # lo=1, hi=5
+```
+
+### Argumentos Predeterminados
+
+Los parámetros pueden tener valores predeterminados. Los valores predeterminados deben venir **después** de los parámetros sin valor predeterminado:
+
+```python
+def power(base, exponent=2):
+    return base ** exponent
+
+power(3)      # 9   — uses default exponent
+power(3, 3)   # 27  — overrides default
+```
+
+:::tip
+Usa valores predeterminados inmutables (números, cadenas, `None`) — nunca predeterminados mutables como `[]` o `{}`. Los predeterminados mutables se comparten entre todas las llamadas, lo que lleva a errores sutiles.
+:::
+
+### *args y **kwargs
+
+- `*args` recopila argumentos posicionales adicionales en una tupla
+- `**kwargs` recopila argumentos de palabra clave adicionales en un diccionario
+
+```python
+def total(*args):
+    return sum(args)
+
+total(1, 2, 3, 4)   # 10
+
+def info(**kwargs):
+    for key, value in kwargs.items():
+        print(f"{key}: {value}")
+
+info(name="Alice", age=30)
+```
+
+Consulta [Listas de Argumentos Arbitrarios](https://docs.python.org/3/tutorial/controlflow.html#arbitrary-argument-lists) en la documentación.
+
+### Expresiones Lambda
+
+Un `lambda` crea una pequeña función anónima en una sola expresión:
+
+```python
+square = lambda x: x ** 2
+square(5)   # 25
+
+# Useful as a key function:
+pairs = [(1, "b"), (2, "a"), (3, "c")]
+sorted(pairs, key=lambda p: p[1])  # sort by second element
+```
+
+:::note
+Los lambdas están limitados a una sola expresión. Para algo más complejo, usa un `def` regular.
+:::
+
+### Alcance
+
+Python usa la resolución de alcance **LEGB**: Local → Envolvente → Global → Integrado.
+
+```python
+x = 10   # global
+
+def show():
+    x = 20       # local — does NOT affect the global x
+    print(x)     # 20
+
+show()
+print(x)   # 10
+```
+
+Usa `global` para modificar una variable global dentro de una función (generalmente evita esto):
+
+```python
+counter = 0
+def increment():
+    global counter
+    counter += 1
+```
+
+Consulta [Alcances y Espacios de Nombres](https://docs.python.org/3/tutorial/classes.html#python-scopes-and-namespaces).
+
+### Docstrings
+
+Un docstring es un literal de cadena colocado como la primera instrucción en una función. Documenta el propósito, los parámetros y el valor de retorno de la función:
+
+```python
+def celsius_to_fahrenheit(celsius):
+    """Convert a temperature from Celsius to Fahrenheit.
+
+    Args:
+        celsius (float): Temperature in degrees Celsius.
+
+    Returns:
+        float: Temperature in degrees Fahrenheit.
+    """
+    return celsius * 9 / 5 + 32
+```
+
+Accede a un docstring con `help(celsius_to_fahrenheit)` o `celsius_to_fahrenheit.__doc__`.
+
+---
+
+## Demo Visual
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-from-zero-to-hero/demos/fibonacci-tree/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Fibonacci Recursion Tree"
+  />
+</div>
+
+---
+
+## Ejercicios
+
+:::info Cómo usar estos ejercicios
+Edita el código en cada panel y haz clic en **Run** (o presiona Ctrl+Enter / Cmd+Enter) para ejecutarlo. Si hay casos de prueba definidos, los resultados aparecen debajo de la salida.
+:::
+
+### Ejercicio 1 — Función Básica
+
+<PythonRunner
+  title="Basic Function"
+  difficulty="fácil"
+  initialCode={`# Write a function square(n) that returns n squared.
+
+def square(n):
+    pass  # replace with your implementation
+
+print(square(4))   # 16
+print(square(0))   # 0
+print(square(-3))  # 9
+`}
+  testCases={[
+    { input: "square(4)", expected: "16", description: "square(4) should return 16" },
+    { input: "square(0)", expected: "0", description: "square(0) should return 0" },
+    { input: "square(-3)", expected: "9", description: "square(-3) should return 9" },
+  ]}
+/>
+
+### Ejercicio 2 — Múltiples Valores de Retorno
+
+<PythonRunner
+  title="Multiple Return Values"
+  difficulty="fácil"
+  initialCode={`# Write stats(numbers) that returns a tuple (minimum, maximum, mean).
+# numbers is guaranteed to be a non-empty list of floats/ints.
+
+def stats(numbers):
+    pass
+
+mn, mx, avg = stats([4, 7, 2, 9, 1])
+print(mn, mx, avg)
+`}
+  testCases={[
+    { input: "stats([4, 7, 2, 9, 1])[0]", expected: "1", description: "minimum of [4,7,2,9,1] is 1" },
+    { input: "stats([4, 7, 2, 9, 1])[1]", expected: "9", description: "maximum of [4,7,2,9,1] is 9" },
+    { input: "stats([4, 7, 2, 9, 1])[2]", expected: "4.6", description: "mean of [4,7,2,9,1] is 4.6" },
+    { input: "stats([5])[0]", expected: "5", description: "stats of single-element list" },
+  ]}
+/>
+
+### Ejercicio 3 — Argumentos Predeterminados
+
+<PythonRunner
+  title="Default Arguments"
+  difficulty="fácil"
+  initialCode={`# Write greet(name, greeting="Hello") that returns the string
+# "{greeting}, {name}!" using the provided (or default) greeting.
+
+def greet(name, greeting="Hello"):
+    pass
+
+print(greet("Alice"))            # Hello, Alice!
+print(greet("Bob", "Hi"))        # Hi, Bob!
+print(greet("Carol", "Welcome")) # Welcome, Carol!
+`}
+  testCases={[
+    { input: "greet('Alice')", expected: "Hello, Alice!", description: "Default greeting should be 'Hello'" },
+    { input: "greet('Bob', 'Hi')", expected: "Hi, Bob!", description: "Custom greeting should override default" },
+    { input: "greet('Carol', 'Welcome')", expected: "Welcome, Carol!", description: "Any greeting should work" },
+  ]}
+/>
+
+### Ejercicio 4 — *args
+
+<PythonRunner
+  title="*args"
+  difficulty="medio"
+  initialCode={`# Write product(*args) that returns the product (multiplication) of all
+# numbers passed to it. Return 1 for zero arguments.
+
+def product(*args):
+    pass
+
+print(product(2, 3, 4))   # 24
+print(product(5))          # 5
+print(product())           # 1
+`}
+  testCases={[
+    { input: "product(2, 3, 4)", expected: "24", description: "2 * 3 * 4 = 24" },
+    { input: "product(5)", expected: "5", description: "product of single value" },
+    { input: "product()", expected: "1", description: "product of no values is 1" },
+    { input: "product(1, 2, 3, 4, 5)", expected: "120", description: "5! = 120" },
+  ]}
+/>
+
+### Ejercicio 5 — **kwargs
+
+<PythonRunner
+  title="**kwargs"
+  difficulty="medio"
+  initialCode={`# Write build_profile(**kwargs) that returns a dictionary with a
+# "username" key (always present, default "anonymous") plus any
+# additional keyword arguments passed in.
+#
+# Example:
+#   build_profile(username="alice", age=30, city="NYC")
+#   -> {"username": "alice", "age": 30, "city": "NYC"}
+#
+#   build_profile(age=25)
+#   -> {"username": "anonymous", "age": 25}
+
+def build_profile(**kwargs):
+    pass
+
+print(build_profile(username="alice", age=30, city="NYC"))
+print(build_profile(age=25))
+`}
+  testCases={[
+    { input: "build_profile(username='alice', age=30)['username']", expected: "alice", description: "username should be 'alice'" },
+    { input: "build_profile(username='alice', age=30)['age']", expected: "30", description: "age should be 30" },
+    { input: "build_profile(age=25)['username']", expected: "anonymous", description: "Default username is 'anonymous'" },
+    { input: "build_profile(age=25)['age']", expected: "25", description: "Extra kwarg should be included" },
+  ]}
+/>
+
+### Ejercicio 6 — Lambda y Ordenamiento
+
+<PythonRunner
+  title="Lambda and Sorting"
+  difficulty="medio"
+  initialCode={`# Use lambda expressions as key functions for sorting.
+students = [
+    {"name": "Alice", "grade": 88},
+    {"name": "Bob",   "grade": 95},
+    {"name": "Carol", "grade": 72},
+    {"name": "Dave",  "grade": 88},
+]
+
+# 1. by_grade_asc  — students sorted by grade ascending
+# 2. by_grade_desc — students sorted by grade descending
+# 3. by_name       — students sorted alphabetically by name
+
+by_grade_asc = None
+by_grade_desc = None
+by_name = None
+
+print([s["name"] for s in by_grade_asc])
+print([s["grade"] for s in by_grade_desc])
+print([s["name"] for s in by_name])
+`}
+  testCases={[
+    { input: "by_grade_asc[0]['name']", expected: "Carol", description: "Lowest grade is Carol (72)" },
+    { input: "by_grade_desc[0]['name']", expected: "Bob", description: "Highest grade is Bob (95)" },
+    { input: "by_name[0]['name']", expected: "Alice", description: "Alphabetically first is Alice" },
+  ]}
+/>
+
+### Ejercicio 7 — Función Recursiva
+
+<PythonRunner
+  title="Recursive Function"
+  difficulty="difícil"
+  initialCode={`# Write factorial(n) that computes n! recursively.
+# factorial(0) = 1 (base case)
+# factorial(n) = n * factorial(n - 1)
+#
+# Also write fibonacci(n) that returns the nth Fibonacci number.
+# fibonacci(0) = 0, fibonacci(1) = 1
+# fibonacci(n) = fibonacci(n-1) + fibonacci(n-2)
+
+def factorial(n):
+    pass
+
+def fibonacci(n):
+    pass
+
+print(factorial(5))    # 120
+print(fibonacci(10))   # 55
+`}
+  testCases={[
+    { input: "factorial(0)", expected: "1", description: "0! = 1" },
+    { input: "factorial(5)", expected: "120", description: "5! = 120" },
+    { input: "factorial(10)", expected: "3628800", description: "10! = 3628800" },
+    { input: "fibonacci(0)", expected: "0", description: "fibonacci(0) = 0" },
+    { input: "fibonacci(1)", expected: "1", description: "fibonacci(1) = 1" },
+    { input: "fibonacci(10)", expected: "55", description: "fibonacci(10) = 55" },
+  ]}
+/>
+
+### Ejercicio 8 — memoize (Bonus)
+
+:::caution Desafío Anticipado
+Este ejercicio anticipa decoradores y cierres. Está incluido como un **desafío bonus** para quienes quieran explorar por adelantado.
+:::
+
+<PythonRunner
+  title="memoize"
+  difficulty="difícil"
+  initialCode={`# Write memoize(func) that wraps a function and caches its results.
+# When the wrapped function is called with the same arguments a second time,
+# return the cached result instead of calling the original function.
+#
+# Hint: use a dict as the cache, where keys are the arguments.
+
+def memoize(func):
+    cache = {}
+    def wrapper(*args):
+        if args not in cache:
+            cache[args] = func(*args)
+        return cache[args]
+    return wrapper
+
+@memoize
+def slow_square(n):
+    # Imagine this is expensive
+    return n * n
+
+print(slow_square(4))   # 16
+print(slow_square(4))   # 16 (from cache)
+print(slow_square(5))   # 25
+`}
+  testCases={[
+    { input: "slow_square(4)", expected: "16", description: "slow_square(4) should return 16" },
+    { input: "slow_square(7)", expected: "49", description: "slow_square(7) should return 49" },
+    { input: "slow_square(0)", expected: "0", description: "slow_square(0) should return 0" },
+  ]}
+/>

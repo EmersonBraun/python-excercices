@@ -1,0 +1,383 @@
+---
+title: Entrada/Saída de Arquivos
+sidebar_label: Entrada/Saída de Arquivos
+sidebar_position: 2
+---
+
+# Entrada/Saída de Arquivos
+
+Neste módulo você vai aprender como o Python lê e escreve arquivos usando a função embutida `open()`, como manipular dados CSV e JSON, e como gerenciar recursos com segurança usando o **gerenciador de contexto** (instrução `with`). Ao final você terá confiança para ler, escrever e transformar dados baseados em arquivos em Python.
+
+## Objetivos de Aprendizagem
+
+- Abrir arquivos em diferentes modos (`r`, `w`, `a`, `rb`)
+- Ler e escrever arquivos de texto com segurança usando gerenciadores de contexto
+- Analisar e escrever dados CSV com o módulo `csv`
+- Serializar e desserializar JSON com o módulo `json`
+- Usar `io.StringIO` para objetos semelhantes a arquivos na memória (compatível com Pyodide)
+
+---
+
+## Teoria
+
+### A Função `open()` e Modos de Arquivo
+
+Python abre arquivos com a função embutida `open()`. O segundo argumento é o **modo**:
+
+| Modo | Significado |
+|------|-------------|
+| `"r"` | Leitura (padrão) — o arquivo deve existir |
+| `"w"` | Escrita — cria ou **sobrescreve** o arquivo |
+| `"a"` | Anexar — cria ou **adiciona ao** final |
+| `"rb"` / `"wb"` | Leitura / escrita binária |
+
+```python
+f = open("data.txt", "w")
+f.write("Hello, file!")
+f.close()           # sempre feche quando terminar
+```
+
+:::tip
+Esquecer de chamar `close()` pode corromper arquivos ou vazar descritores de arquivo. Use a instrução `with` (veja abaixo) — ela fecha o arquivo automaticamente.
+:::
+
+Consulte [open() — Funções Embutidas](https://docs.python.org/3/library/functions.html#open) para referência completa.
+
+### Gerenciadores de Contexto — Instrução `with`
+
+A instrução `with` garante que o arquivo seja fechado quando o bloco terminar, mesmo que uma exceção ocorra:
+
+```python
+with open("data.txt", "w") as f:
+    f.write("Hello, file!\n")
+    f.write("Second line.\n")
+# arquivo é fechado automaticamente aqui
+```
+
+Lendo o arquivo de volta:
+
+```python
+with open("data.txt", "r") as f:
+    content = f.read()          # arquivo inteiro como string
+    # — ou —
+    lines = f.readlines()       # lista de linhas
+    # — ou —
+    for line in f:              # iterar linha a linha
+        print(line.strip())
+```
+
+:::note
+No Pyodide (o runtime Python no navegador usado aqui) você pode escrever no sistema de arquivos virtual assim como em uma máquina real. Os arquivos existem apenas durante a sessão da página.
+:::
+
+Consulte [Lendo e Escrevendo Arquivos](https://docs.python.org/3/tutorial/inputoutput.html#reading-and-writing-files) para mais detalhes.
+
+### `io.StringIO` — Arquivos na Memória
+
+`io.StringIO` fornece um objeto semelhante a arquivo suportado por uma string na memória. É útil para testar código que espera um arquivo sem tocar no disco:
+
+```python
+import io
+
+buffer = io.StringIO()
+buffer.write("line one\n")
+buffer.write("line two\n")
+buffer.seek(0)               # rebobinar para o início
+content = buffer.read()
+print(content)
+```
+
+Consulte [io — Ferramentas de núcleo para trabalhar com streams](https://docs.python.org/3/library/io.html).
+
+### Manipulação de CSV
+
+O módulo `csv` simplifica a leitura e escrita de valores separados por vírgula:
+
+```python
+import csv, io
+
+# Escrever CSV em um buffer StringIO
+output = io.StringIO()
+writer = csv.writer(output)
+writer.writerow(["name", "age", "city"])
+writer.writerow(["Alice", 30, "London"])
+writer.writerow(["Bob", 25, "Paris"])
+
+# Ler de volta
+output.seek(0)
+reader = csv.DictReader(output)
+for row in reader:
+    print(row["name"], row["age"])
+```
+
+:::tip
+Use `csv.DictReader` para obter cada linha como um dicionário com chaves baseadas nos nomes do cabeçalho — muito mais legível do que indexar por número de coluna.
+:::
+
+Consulte [csv — Leitura e Escrita de Arquivo CSV](https://docs.python.org/3/library/csv.html).
+
+### Manipulação de JSON
+
+O módulo `json` converte objetos Python em strings JSON e de volta:
+
+```python
+import json
+
+data = {"name": "Alice", "scores": [95, 87, 92], "active": True}
+
+# Serializar Python → string JSON
+json_str = json.dumps(data, indent=2)
+print(json_str)
+
+# Desserializar string JSON → Python
+loaded = json.loads(json_str)
+print(loaded["name"])        # Alice
+print(loaded["scores"][0])   # 95
+```
+
+Use `json.dump()` / `json.load()` ao trabalhar com objetos de arquivo reais em vez de strings.
+
+Consulte [json — Codificador e decodificador JSON](https://docs.python.org/3/library/json.html).
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Escrever e Ler um Arquivo
+
+<PythonRunner
+  title="Write and Read a File"
+  difficulty="easy"
+  initialCode={`# Use open() with a context manager to:
+# 1. Write "Hello, Python!" to a file called "greeting.txt"
+# 2. Read it back and store the content in a variable called content
+# 3. Print content
+
+# Step 1: write
+with open("greeting.txt", "w") as f:
+    f.write("Hello, Python!")
+
+# Step 2: read back
+# Your code here — store the result in 'content'
+content = ""
+`}
+  testCases={[
+    { input: "content", expected: "Hello, Python!", description: "content should be 'Hello, Python!'" },
+    { input: "'Hello' in content", expected: "True", description: "content should contain 'Hello'" },
+  ]}
+/>
+
+### Exercício 2 — Acrescentar Linhas
+
+<PythonRunner
+  title="Append Lines"
+  difficulty="easy"
+  initialCode={`# 1. Write "Line 1" to "log.txt"
+# 2. Append "Line 2" to "log.txt" (do NOT overwrite)
+# 3. Read the file and store all lines in a list called lines
+#    Each element should be a stripped string: ["Line 1", "Line 2"]
+
+with open("log.txt", "w") as f:
+    f.write("Line 1\\n")
+
+# Append "Line 2"
+# Your code here
+
+# Read back into a list called lines
+lines = []
+`}
+  testCases={[
+    { input: "len(lines)", expected: "2", description: "lines list should have 2 elements" },
+    { input: "lines[0]", expected: "Line 1", description: "First line should be 'Line 1'" },
+    { input: "lines[1]", expected: "Line 2", description: "Second line should be 'Line 2'" },
+  ]}
+/>
+
+### Exercício 3 — Buffer StringIO
+
+<PythonRunner
+  title="StringIO Buffer"
+  difficulty="easy"
+  initialCode={`# Use io.StringIO to create an in-memory file-like object.
+# 1. Write three lines: "alpha", "beta", "gamma" (each on its own line)
+# 2. Rewind to the beginning
+# 3. Read all lines into a list called lines (stripped of whitespace)
+
+import io
+
+buffer = io.StringIO()
+# Your code here
+
+lines = []
+`}
+  testCases={[
+    { input: "lines[0]", expected: "alpha", description: "First line should be 'alpha'" },
+    { input: "lines[1]", expected: "beta", description: "Second line should be 'beta'" },
+    { input: "lines[2]", expected: "gamma", description: "Third line should be 'gamma'" },
+    { input: "len(lines)", expected: "3", description: "Should have exactly 3 lines" },
+  ]}
+/>
+
+### Exercício 4 — Escritor CSV
+
+<PythonRunner
+  title="CSV Writer"
+  difficulty="medium"
+  initialCode={`# Build a CSV in memory using csv.writer + io.StringIO.
+# Write a header row ["product", "price", "qty"]
+# Then write three data rows:
+#   ["Apple",  0.99, 50]
+#   ["Banana", 0.25, 120]
+#   ["Cherry", 3.50, 30]
+#
+# Store the final CSV string in a variable called csv_text.
+
+import csv, io
+
+output = io.StringIO()
+# Your code here
+
+csv_text = output.getvalue()
+print(csv_text)
+`}
+  testCases={[
+    { input: "'product' in csv_text", expected: "True", description: "csv_text should contain the header 'product'" },
+    { input: "'Apple' in csv_text", expected: "True", description: "csv_text should contain 'Apple'" },
+    { input: "'3.5' in csv_text or '3.50' in csv_text", expected: "True", description: "csv_text should contain the Cherry price" },
+    { input: "len(csv_text.strip().splitlines())", expected: "4", description: "Should have 4 lines (1 header + 3 data)" },
+  ]}
+/>
+
+### Exercício 5 — Leitor CSV com DictReader
+
+<PythonRunner
+  title="CSV DictReader"
+  difficulty="medium"
+  initialCode={`# Parse the CSV below with csv.DictReader.
+# Calculate the total inventory value: sum of price * qty for each row.
+# Store the result (a float) in total_value.
+
+import csv, io
+
+raw_csv = """product,price,qty
+Apple,0.99,50
+Banana,0.25,120
+Cherry,3.50,30"""
+
+reader = csv.DictReader(io.StringIO(raw_csv))
+total_value = 0.0
+# Your code here — iterate over reader rows
+`}
+  testCases={[
+    { input: "round(total_value, 2)", expected: "184.5", description: "Total inventory value should be 184.50" },
+  ]}
+/>
+
+### Exercício 6 — Serializar e Desserializar JSON
+
+<PythonRunner
+  title="JSON Serialize & Deserialize"
+  difficulty="medium"
+  initialCode={`# 1. Serialize the dictionary below to a JSON string called json_str (no indentation needed).
+# 2. Deserialize it back to a Python dictionary called data_back.
+# 3. Print the "author" field from data_back.
+
+import json
+
+book = {
+    "title": "Python Crash Course",
+    "author": "Eric Matthes",
+    "year": 2023,
+    "available": True,
+}
+
+json_str = ""      # serialize book → JSON string
+data_back = {}     # deserialize json_str → Python dict
+`}
+  testCases={[
+    { input: "data_back['author']", expected: "Eric Matthes", description: "author field should be 'Eric Matthes'" },
+    { input: "data_back['year']", expected: "2023", description: "year field should be 2023" },
+    { input: "data_back['available']", expected: "True", description: "available field should be True" },
+    { input: "isinstance(json_str, str)", expected: "True", description: "json_str should be a string" },
+  ]}
+/>
+
+### Exercício 7 — Ida e Volta de Arquivo de Configuração
+
+<PythonRunner
+  title="Config File Round-Trip"
+  difficulty="medium"
+  initialCode={`# Simulate saving and loading app configuration as JSON.
+# 1. Write the config dict to "config.json" using json.dump()
+# 2. Read it back using json.load() and store in loaded_config
+# 3. Update loaded_config["debug"] to False
+# 4. Write the updated config back to "config.json"
+# 5. Read the final file and store in final_config
+
+import json
+
+config = {
+    "app_name": "MyApp",
+    "version": "1.0.0",
+    "debug": True,
+    "max_connections": 10,
+}
+
+# Your code here
+
+loaded_config = {}
+final_config = {}
+`}
+  testCases={[
+    { input: "final_config['debug']", expected: "False", description: "debug should be updated to False" },
+    { input: "final_config['app_name']", expected: "MyApp", description: "app_name should remain 'MyApp'" },
+    { input: "final_config['max_connections']", expected: "10", description: "max_connections should remain 10" },
+  ]}
+/>
+
+### Exercício 8 — Analisador de Log (Bônus)
+
+:::caution Desafio Antecipado
+Este exercício usa E/S de arquivos junto com processamento de strings e dicionários. Está incluído como um **desafio bônus** para quem quiser combinar múltiplos conceitos.
+:::
+
+<PythonRunner
+  title="Log Analyzer"
+  difficulty="hard"
+  initialCode={`# Analyze the log data below and produce a summary.
+# The log format is: LEVEL: message
+# Levels are: INFO, WARNING, ERROR
+#
+# 1. Write log_data to "app.log"
+# 2. Read it back line by line
+# 3. Count occurrences of each level in a dict called counts
+#    e.g. {"INFO": 3, "WARNING": 2, "ERROR": 1}
+# 4. Store the total number of lines in total_lines
+
+import io
+
+log_data = """INFO: Server started
+INFO: Request received
+WARNING: Disk usage above 80%
+ERROR: Database connection failed
+INFO: Retry successful
+WARNING: Memory usage high
+ERROR: Timeout on endpoint /api/data
+INFO: Request processed
+"""
+
+counts = {"INFO": 0, "WARNING": 0, "ERROR": 0}
+total_lines = 0
+# Your code here
+`}
+  testCases={[
+    { input: "counts['INFO']", expected: "4", description: "Should count 4 INFO lines" },
+    { input: "counts['WARNING']", expected: "2", description: "Should count 2 WARNING lines" },
+    { input: "counts['ERROR']", expected: "2", description: "Should count 2 ERROR lines" },
+    { input: "total_lines", expected: "8", description: "Should count 8 total non-empty lines" },
+  ]}
+/>

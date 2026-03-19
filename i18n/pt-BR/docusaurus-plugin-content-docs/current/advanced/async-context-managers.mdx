@@ -1,0 +1,397 @@
+---
+title: Programação Assíncrona & Gerenciadores de Contexto
+sidebar_label: Async & Gerenciadores de Contexto
+sidebar_position: 3
+---
+
+# Programação Assíncrona & Gerenciadores de Contexto
+
+Neste módulo você vai aprender como o Python lida com **programação assíncrona** usando `async`/`await` e `asyncio`, como construir e usar **gerenciadores de contexto** com a instrução `with`, e como adicionar **anotações de tipo** para tornar seu código auto-documentado. Ao final você será capaz de escrever programas assíncronos concorrentes, criar gerenciadores de contexto personalizados e anotar assinaturas de funções.
+
+## Objetivos de Aprendizagem
+
+- Escrever funções `async def` e usar `await` em corrotinas
+- Usar `asyncio.gather` para executar tarefas de forma concorrente
+- Implementar gerenciadores de contexto com `__enter__`/`__exit__`
+- Construir gerenciadores de contexto com `@contextmanager`
+- Adicionar anotações de tipo a funções e variáveis
+
+---
+
+## Teoria
+
+### Fundamentos de async / await
+
+A biblioteca `asyncio` do Python permite **multitarefa cooperativa**: enquanto uma corrotina aguarda por I/O, outras corrotinas podem executar. Você define uma corrotina com `async def` e a pausa com `await`:
+
+```python
+import asyncio
+
+async def greet(name, delay):
+    await asyncio.sleep(delay)   # yields control while waiting
+    print(f"Hello, {name}!")
+
+asyncio.run(greet("Alice", 1))
+```
+
+:::note
+No Pyodide (o runtime do navegador usado nestes exercícios), use `asyncio.run()` para executar código assíncrono a partir de um contexto síncrono. O Pyodide suporta `runPythonAsync` internamente.
+:::
+
+### asyncio.gather — Tarefas Concorrentes
+
+`asyncio.gather(*coroutines)` executa múltiplas corrotinas **de forma concorrente** e aguarda todas elas:
+
+```python
+async def main():
+    # These two run at the same time — total ~1s, not ~2s
+    await asyncio.gather(
+        greet("Alice", 0.5),
+        greet("Bob", 1.0),
+    )
+
+asyncio.run(main())
+```
+
+Consulte [asyncio — I/O Assíncrono](https://docs.python.org/3/library/asyncio.html).
+
+### Gerenciadores de Contexto — Instrução `with`
+
+A instrução `with` garante configuração e limpeza, mesmo se uma exceção ocorrer. Qualquer objeto que implemente `__enter__` e `__exit__` pode ser usado:
+
+```python
+class ManagedResource:
+    def __enter__(self):
+        print("Acquiring resource")
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        print("Releasing resource")
+        return False   # False = don't suppress exceptions
+
+with ManagedResource() as r:
+    print("Using resource")
+```
+
+### `contextlib.contextmanager`
+
+O decorator `@contextmanager` permite escrever gerenciadores de contexto como funções geradoras — mais limpo para casos simples:
+
+```python
+from contextlib import contextmanager
+
+@contextmanager
+def timer(label="block"):
+    import time
+    start = time.perf_counter()
+    try:
+        yield          # code inside the `with` block runs here
+    finally:
+        elapsed = time.perf_counter() - start
+        print(f"{label} took {elapsed:.4f}s")
+
+with timer("my work"):
+    sum(range(1_000_000))
+```
+
+Consulte [contextlib](https://docs.python.org/3/library/contextlib.html).
+
+### Anotações de Tipo
+
+As anotações de tipo do Python são dicas para humanos e ferramentas — elas **não** afetam o comportamento em tempo de execução:
+
+```python
+def greet(name: str, times: int = 1) -> str:
+    return (f"Hello, {name}!\n" * times).strip()
+
+age: int = 30
+scores: list[int] = [95, 87, 92]
+lookup: dict[str, int] = {"a": 1, "b": 2}
+```
+
+Use `from typing import Optional, Union, Callable` para tipos mais complexos (Python 3.9 e abaixo requerem `from typing import List, Dict`).
+
+Consulte [typing — Suporte para dicas de tipo](https://docs.python.org/3/library/typing.html).
+
+---
+
+## Exercícios
+
+:::info Como usar estes exercícios
+Edite o código em cada painel e clique em **Run** (ou pressione Ctrl+Enter / Cmd+Enter) para executá-lo. Se casos de teste estiverem definidos, os resultados aparecem abaixo da saída.
+:::
+
+### Exercício 1 — Primeira Corrotina
+
+<PythonRunner
+  title="First Coroutine"
+  difficulty="fácil"
+  initialCode={`import asyncio
+
+# Write an async function called 'delayed_square(x, delay)' that:
+# 1. Waits for 'delay' seconds (use asyncio.sleep)
+# 2. Returns x * x
+#
+# Then use asyncio.run() to call it and print the result.
+
+async def delayed_square(x, delay):
+    # Your code here
+    pass
+
+result = asyncio.run(delayed_square(5, 0))
+print(f"5 squared = {result}")
+`}
+  testCases={[
+    { input: "asyncio.run(delayed_square(5, 0))", expected: "25", description: "delayed_square(5, 0) should return 25" },
+    { input: "asyncio.run(delayed_square(3, 0))", expected: "9", description: "delayed_square(3, 0) should return 9" },
+    { input: "asyncio.run(delayed_square(0, 0))", expected: "0", description: "delayed_square(0, 0) should return 0" },
+  ]}
+/>
+
+### Exercício 2 — Gather de Resultados
+
+<PythonRunner
+  title="Gather Results"
+  difficulty="fácil"
+  initialCode={`import asyncio
+
+# Use asyncio.gather to compute multiple values concurrently.
+#
+# Write an async function called 'compute_all(numbers)' that:
+# 1. Accepts a list of integers
+# 2. For each number n, asynchronously computes n * n (no real delay needed)
+# 3. Uses asyncio.gather to run all computations concurrently
+# 4. Returns a list of results in the same order as the input
+
+async def square(n):
+    await asyncio.sleep(0)   # yield control (simulate async work)
+    return n * n
+
+async def compute_all(numbers):
+    # Your code here — use asyncio.gather
+    pass
+
+result = asyncio.run(compute_all([1, 2, 3, 4, 5]))
+print(result)
+`}
+  testCases={[
+    { input: "asyncio.run(compute_all([1, 2, 3, 4, 5]))", expected: "[1, 4, 9, 16, 25]", description: "Should return squares of all numbers" },
+    { input: "asyncio.run(compute_all([]))", expected: "[]", description: "Empty input should return empty list" },
+    { input: "asyncio.run(compute_all([7]))", expected: "[49]", description: "Single element should work" },
+  ]}
+/>
+
+### Exercício 3 — Gerenciador de Contexto Baseado em Classe
+
+<PythonRunner
+  title="Class-Based Context Manager"
+  difficulty="médio"
+  initialCode={`# Implement a class-based context manager called 'Timer' that:
+# 1. Records the start time in __enter__ (use time.perf_counter())
+# 2. Computes elapsed time in __exit__ and stores it in self.elapsed
+# 3. Returns self from __enter__ so callers can access self.elapsed
+# 4. Does NOT suppress exceptions (__exit__ returns False)
+#
+# Usage:
+#   with Timer() as t:
+#       sum(range(1_000_000))
+#   print(f"Took {t.elapsed:.4f}s")
+
+import time
+
+class Timer:
+    def __init__(self):
+        self.elapsed = 0.0
+
+    def __enter__(self):
+        # Your code here
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Your code here
+        pass
+
+with Timer() as t:
+    total = sum(range(100_000))
+
+print(f"Elapsed: {t.elapsed:.6f}s")
+print(f"elapsed > 0: {t.elapsed > 0}")
+`}
+  testCases={[
+    { input: "t.elapsed > 0", expected: "True", description: "elapsed should be a positive number" },
+    { input: "type(t.elapsed).__name__", expected: "float", description: "elapsed should be a float" },
+  ]}
+/>
+
+### Exercício 4 — Timer com contextlib
+
+<PythonRunner
+  title="contextlib Timer"
+  difficulty="médio"
+  initialCode={`from contextlib import contextmanager
+import time
+
+# Rewrite the Timer from Exercise 3 using @contextmanager.
+# The generator-based version should:
+# 1. Record start time before yield
+# 2. yield a dict {'elapsed': 0.0} so the caller can read the time
+# 3. Update dict['elapsed'] in the finally block after yield
+#
+# Usage:
+#   with timer_ctx() as t:
+#       sum(range(100_000))
+#   print(t['elapsed'])
+
+@contextmanager
+def timer_ctx():
+    # Your code here
+    pass
+
+with timer_ctx() as t:
+    total = sum(range(100_000))
+
+print(f"Elapsed: {t['elapsed']:.6f}s")
+print(f"elapsed > 0: {t['elapsed'] > 0}")
+`}
+  testCases={[
+    { input: "t['elapsed'] > 0", expected: "True", description: "elapsed should be positive" },
+    { input: "type(t['elapsed']).__name__", expected: "float", description: "elapsed should be a float" },
+  ]}
+/>
+
+### Exercício 5 — Funções com Anotações de Tipo
+
+<PythonRunner
+  title="Type-Annotated Functions"
+  difficulty="fácil"
+  initialCode={`# Add type annotations to each function below.
+# The logic is already correct — your job is ONLY to add annotations.
+#
+# Annotate parameters and return types for:
+# 1. add(a, b) -> returns sum of two ints
+# 2. greet(name, times) -> returns a greeting string repeated 'times' times
+# 3. filter_evens(numbers) -> takes list of ints, returns list of ints
+# 4. lookup(data, key) -> takes dict[str, int] and str key, returns int or None
+
+def add(a, b):
+    return a + b
+
+def greet(name, times = 1):
+    return " ".join([f"Hello, {name}!"] * times)
+
+def filter_evens(numbers):
+    return [n for n in numbers if n % 2 == 0]
+
+def lookup(data, key):
+    return data.get(key)
+
+# Test the functions
+print(add(3, 4))
+print(greet("Alice", 2))
+print(filter_evens([1, 2, 3, 4, 5, 6]))
+print(lookup({"a": 1, "b": 2}, "a"))
+print(lookup({"a": 1}, "z"))
+`}
+  testCases={[
+    { input: "add(3, 4)", expected: "7", description: "add(3, 4) should return 7" },
+    { input: "greet('Alice', 2)", expected: "Hello, Alice! Hello, Alice!", description: "greet should repeat the greeting" },
+    { input: "filter_evens([1, 2, 3, 4, 5, 6])", expected: "[2, 4, 6]", description: "filter_evens should return only even numbers" },
+    { input: "lookup({'a': 1, 'b': 2}, 'a')", expected: "1", description: "lookup should find existing keys" },
+    { input: "lookup({'a': 1}, 'z')", expected: "None", description: "lookup should return None for missing keys" },
+  ]}
+/>
+
+### Exercício 6 — Gerenciador de Contexto Assíncrono
+
+<PythonRunner
+  title="Async Context Manager"
+  difficulty="médio"
+  initialCode={`import asyncio
+
+# Implement an async context manager class 'AsyncTimer' using
+# __aenter__ and __aexit__. It should behave like the Timer
+# in Exercise 3 but work inside async functions.
+#
+# Usage:
+#   async def main():
+#       async with AsyncTimer() as t:
+#           await asyncio.sleep(0)
+#       print(t.elapsed)
+
+import time
+
+class AsyncTimer:
+    def __init__(self):
+        self.elapsed = 0.0
+
+    async def __aenter__(self):
+        self._start = time.perf_counter()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        self.elapsed = time.perf_counter() - self._start
+        return False
+
+async def main():
+    async with AsyncTimer() as t:
+        await asyncio.sleep(0)
+        total = sum(range(100_000))
+    print(f"Elapsed: {t.elapsed:.6f}s")
+    print(f"elapsed > 0: {t.elapsed > 0}")
+    return t.elapsed
+
+elapsed = asyncio.run(main())
+print(f"Final elapsed: {elapsed:.6f}s")
+`}
+  testCases={[
+    { input: "asyncio.run(main()) > 0", expected: "True", description: "elapsed should be a positive float" },
+  ]}
+/>
+
+### Exercício 7 — Retry Assíncrono (Bônus)
+
+:::caution Desafio Bônus
+Este exercício combina programação assíncrona com o padrão decorator. Está incluído como um **desafio bônus**.
+:::
+
+<PythonRunner
+  title="Async Retry Decorator"
+  difficulty="difícil"
+  initialCode={`import asyncio
+import functools
+
+# Write an async decorator factory 'async_retry(max_attempts, delay)'
+# that retries a failing async function up to max_attempts times,
+# waiting delay seconds between retries.
+#
+# If all attempts fail, re-raise the last exception.
+
+def async_retry(max_attempts=3, delay=0):
+    def decorator(func):
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            # Your code here
+            pass
+        return wrapper
+    return decorator
+
+# Test: this function fails the first 2 times, succeeds on the 3rd
+attempt_count = 0
+
+@async_retry(max_attempts=3, delay=0)
+async def flaky():
+    global attempt_count
+    attempt_count += 1
+    if attempt_count < 3:
+        raise RuntimeError(f"Fail #{attempt_count}")
+    return "success"
+
+result = asyncio.run(flaky())
+print(f"Result: {result}")
+print(f"Attempts needed: {attempt_count}")
+`}
+  testCases={[
+    { input: "asyncio.run(flaky()) if (globals().update({'attempt_count': 0}) or True) else None", expected: "success", description: "Should eventually succeed and return 'success'" },
+    { input: "flaky.__name__", expected: "flaky", description: "functools.wraps should preserve __name__" },
+  ]}
+/>

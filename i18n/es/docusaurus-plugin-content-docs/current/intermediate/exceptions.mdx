@@ -1,0 +1,446 @@
+---
+title: Excepciones y Manejo de Errores
+sidebar_label: Excepciones y Manejo de Errores
+sidebar_position: 3
+---
+
+# Excepciones y Manejo de Errores
+
+En este módulo aprenderás cómo Python señala errores a través de **excepciones**, cómo atraparlas y manejarlas con elegancia, cómo lanzar tus propias excepciones y cómo construir jerarquías de excepciones personalizadas. Al final podrás escribir programas robustos que degradan con gracia en lugar de fallar inesperadamente.
+
+## Objetivos de Aprendizaje
+
+- Entender qué son las excepciones y cómo Python las lanza
+- Usar bloques `try` / `except` / `else` / `finally` correctamente
+- Atrapar tipos de excepción específicos en lugar de `except` genérico
+- Lanzar excepciones intencionalmente con `raise`
+- Definir clases de excepción personalizadas
+- Encadenar excepciones con `raise ... from ...`
+
+---
+
+## Teoría
+
+### ¿Qué Es una Excepción?
+
+Una excepción es un objeto Python que señala que algo salió mal en tiempo de ejecución. Cuando Python lanza una excepción, la ejecución normal se detiene y Python deshace la pila de llamadas buscando un manejador. Si no se encuentra ninguno, el programa imprime un **traceback** y termina.
+
+Excepciones integradas comunes:
+
+| Excepción | Lanzada cuando |
+|-----------|---------------|
+| `ValueError` | El argumento tiene el tipo correcto pero valor incorrecto |
+| `TypeError` | Operación aplicada al tipo incorrecto |
+| `KeyError` | Clave de diccionario no encontrada |
+| `IndexError` | Índice de secuencia fuera de rango |
+| `FileNotFoundError` | El archivo no existe |
+| `ZeroDivisionError` | División por cero |
+| `AttributeError` | El atributo no existe en el objeto |
+
+Consulta [Excepciones Integradas](https://docs.python.org/3/library/exceptions.html) para la jerarquía completa.
+
+### `try` / `except`
+
+Envuelve el código riesgoso en un bloque `try` y maneja el error en un bloque `except`:
+
+```python
+try:
+    result = int("not a number")
+except ValueError as e:
+    print(f"Conversion failed: {e}")
+```
+
+Puedes atrapar múltiples tipos de excepción:
+
+```python
+try:
+    value = data[key] / count
+except KeyError:
+    print("Key not found")
+except ZeroDivisionError:
+    print("Cannot divide by zero")
+except (TypeError, ValueError) as e:
+    print(f"Bad value: {e}")
+```
+
+:::tip
+Siempre atrapa la excepción **más específica** que esperas. Un `except:` genérico (o `except Exception:`) oculta errores y dificulta mucho la depuración.
+:::
+
+### `else` y `finally`
+
+- El bloque `else` se ejecuta **solo cuando no se lanzó ninguna excepción**.
+- El bloque `finally` se ejecuta **siempre** — ideal para limpieza.
+
+```python
+try:
+    result = risky_operation()
+except SomeError as e:
+    print(f"Failed: {e}")
+else:
+    print(f"Success: {result}")   # runs only if no exception
+finally:
+    print("Cleanup always runs")  # runs regardless
+```
+
+Consulta [Manejo de Excepciones](https://docs.python.org/3/tutorial/errors.html#handling-exceptions) en el Tutorial de Python.
+
+### Lanzar Excepciones
+
+Usa `raise` para señalar un error desde tu propio código:
+
+```python
+def set_age(age):
+    if not isinstance(age, int):
+        raise TypeError(f"age must be int, got {type(age).__name__}")
+    if age < 0:
+        raise ValueError(f"age cannot be negative: {age}")
+    return age
+```
+
+Vuelve a lanzar la excepción actual dentro de un bloque `except` simplemente con `raise` (sin argumento).
+
+### Clases de Excepción Personalizadas
+
+Crea subclases de `Exception` (o de un integrado más específico) para crear errores específicos del dominio:
+
+```python
+class InsufficientFundsError(Exception):
+    """Raised when a withdrawal exceeds the available balance."""
+    def __init__(self, amount, balance):
+        self.amount = amount
+        self.balance = balance
+        super().__init__(
+            f"Cannot withdraw {amount}: balance is only {balance}"
+        )
+```
+
+:::note
+Las excepciones personalizadas hacen tu API más clara. Los llamadores pueden atrapar `InsufficientFundsError` específicamente sin atrapar excepciones `ValueError` no relacionadas de otros lugares.
+:::
+
+### Encadenamiento de Excepciones
+
+Usa `raise NewError(...) from original` para preservar el contexto al traducir una excepción en otra:
+
+```python
+try:
+    value = int(user_input)
+except ValueError as e:
+    raise ValueError(f"Invalid port number: {user_input!r}") from e
+```
+
+El traceback original se adjunta y se muestra con "The above exception was the direct cause of the following exception".
+
+Consulta [Encadenamiento de Excepciones](https://docs.python.org/3/tutorial/errors.html#exception-chaining).
+
+---
+
+## Ejercicios
+
+:::info Cómo usar estos ejercicios
+Edita el código en cada panel y haz clic en **Run** (o presiona Ctrl+Enter / Cmd+Enter) para ejecutarlo. Si hay casos de prueba definidos, los resultados aparecen debajo de la salida.
+:::
+
+### Ejercicio 1 — try/except Básico
+
+<PythonRunner
+  title="Basic try/except"
+  difficulty="fácil"
+  initialCode={`# The function safe_divide(a, b) should:
+# - Return a / b when b != 0
+# - Return None when b == 0 (catch ZeroDivisionError)
+
+def safe_divide(a, b):
+    # Your code here
+    pass
+
+print(safe_divide(10, 2))   # 5.0
+print(safe_divide(7, 0))    # None
+`}
+  testCases={[
+    { input: "safe_divide(10, 2)", expected: "5.0", description: "10 / 2 should return 5.0" },
+    { input: "safe_divide(7, 0)", expected: "None", description: "Division by zero should return None" },
+    { input: "safe_divide(0, 5)", expected: "0.0", description: "0 / 5 should return 0.0" },
+  ]}
+/>
+
+### Ejercicio 2 — Capturar Múltiples Excepciones
+
+<PythonRunner
+  title="Catching Multiple Exceptions"
+  difficulty="fácil"
+  initialCode={`# safe_get(data, key) should:
+# - Return data[key] if key exists
+# - Return "KEY_MISSING" if a KeyError occurs
+# - Return "TYPE_ERROR" if a TypeError occurs (e.g. key is unhashable)
+
+def safe_get(data, key):
+    # Your code here
+    pass
+
+d = {"a": 1, "b": 2}
+print(safe_get(d, "a"))        # 1
+print(safe_get(d, "z"))        # KEY_MISSING
+print(safe_get(d, ["list"]))   # TYPE_ERROR (lists can't be dict keys)
+`}
+  testCases={[
+    { input: "safe_get({'x': 42}, 'x')", expected: "42", description: "Should return the value for a valid key" },
+    { input: "safe_get({'x': 42}, 'y')", expected: "KEY_MISSING", description: "Missing key should return 'KEY_MISSING'" },
+    { input: "safe_get({'x': 42}, [])", expected: "TYPE_ERROR", description: "Unhashable key should return 'TYPE_ERROR'" },
+  ]}
+/>
+
+### Ejercicio 3 — try/else/finally
+
+<PythonRunner
+  title="try / else / finally"
+  difficulty="fácil"
+  initialCode={`# parse_number(s) should:
+# - Try to convert s to a float
+# - If successful (else block), return ("ok", float_value)
+# - If ValueError, return ("error", None)
+# - Always print "attempt done" in the finally block
+
+def parse_number(s):
+    result = None
+    status = None
+    try:
+        value = float(s)
+    except ValueError:
+        status = "error"
+        result = None
+    else:
+        # Your code here — set status and result on success
+        pass
+    finally:
+        print("attempt done")
+    return (status, result)
+
+print(parse_number("3.14"))   # ('ok', 3.14)
+print(parse_number("abc"))    # ('error', None)
+`}
+  testCases={[
+    { input: "parse_number('3.14')[0]", expected: "ok", description: "Valid number should return status 'ok'" },
+    { input: "parse_number('3.14')[1]", expected: "3.14", description: "Valid number should return the float value" },
+    { input: "parse_number('abc')[0]", expected: "error", description: "Invalid string should return status 'error'" },
+    { input: "parse_number('abc')[1]", expected: "None", description: "Invalid string should return None as value" },
+  ]}
+/>
+
+### Ejercicio 4 — Lanzar Excepciones
+
+<PythonRunner
+  title="Raising Exceptions"
+  difficulty="medio"
+  initialCode={`# Implement validate_username(name) that:
+# - Raises TypeError if name is not a string
+# - Raises ValueError if name is shorter than 3 characters
+# - Raises ValueError if name contains spaces
+# - Returns name.lower() if all checks pass
+
+def validate_username(name):
+    # Your code here
+    pass
+
+# Tests
+try:
+    print(validate_username("Alice"))         # alice
+    print(validate_username("Jo"))            # should raise ValueError
+except ValueError as e:
+    print(f"ValueError: {e}")
+
+try:
+    print(validate_username(123))             # should raise TypeError
+except TypeError as e:
+    print(f"TypeError: {e}")
+`}
+  testCases={[
+    { input: "validate_username('Alice')", expected: "alice", description: "Valid username should return lowercased name" },
+    { input: "validate_username('Bob123')", expected: "bob123", description: "Alphanumeric username should be accepted" },
+    { input: "try:\n    validate_username('Jo')\n    'not raised'\nexcept ValueError:\n    'raised'", expected: "raised", description: "Short username should raise ValueError" },
+  ]}
+/>
+
+### Ejercicio 5 — Clase de Excepción Personalizada
+
+<PythonRunner
+  title="Custom Exception Class"
+  difficulty="medio"
+  initialCode={`# Create a custom exception InsufficientFundsError that:
+# - Accepts amount and balance in __init__
+# - Stores them as attributes self.amount and self.balance
+# - Has a helpful message: "Cannot withdraw X: balance is Y"
+#
+# Then implement BankAccount with:
+# - __init__(self, balance)
+# - withdraw(self, amount) — raises InsufficientFundsError if amount > balance
+# - deposit(self, amount)  — adds amount to balance
+
+class InsufficientFundsError(Exception):
+    def __init__(self, amount, balance):
+        self.amount = amount
+        self.balance = balance
+        # Call super().__init__ with a descriptive message
+        # Your code here
+
+class BankAccount:
+    def __init__(self, balance):
+        self.balance = balance
+
+    def deposit(self, amount):
+        self.balance += amount
+
+    def withdraw(self, amount):
+        # Your code here — raise InsufficientFundsError when appropriate
+        pass
+
+# Test
+account = BankAccount(100)
+account.deposit(50)
+print(account.balance)  # 150
+
+try:
+    account.withdraw(200)
+except InsufficientFundsError as e:
+    print(e.amount)    # 200
+    print(e.balance)   # 150
+`}
+  testCases={[
+    { input: "account = BankAccount(100); account.deposit(50); account.balance", expected: "150", description: "deposit() should increase balance" },
+    { input: "account2 = BankAccount(100); account2.withdraw(40); account2.balance", expected: "60", description: "withdraw() should decrease balance" },
+    { input: "account3 = BankAccount(50); [e.amount for e in [next(iter([InsufficientFundsError(200,50)]))]][0]", expected: "200", description: "InsufficientFundsError should store the attempted amount" },
+  ]}
+/>
+
+### Ejercicio 6 — Encadenamiento de Excepciones
+
+<PythonRunner
+  title="Exception Chaining"
+  difficulty="medio"
+  initialCode={`# load_config(raw) should:
+# - Try to parse raw as JSON (use json.loads)
+# - If JSON is invalid, raise a ValueError("Invalid config format")
+#   chained FROM the original json.JSONDecodeError
+# - If "host" or "port" keys are missing, raise a KeyError("Missing required key")
+# - Otherwise return a dict with just {"host": ..., "port": ...}
+
+import json
+
+def load_config(raw):
+    # Your code here
+    pass
+
+# Test 1 — valid config
+cfg = load_config('{"host": "localhost", "port": 8080, "debug": true}')
+print(cfg)  # {'host': 'localhost', 'port': 8080}
+
+# Test 2 — invalid JSON
+try:
+    load_config("{bad json}")
+except ValueError as e:
+    print(f"ValueError: {e}")
+    print(f"Caused by: {type(e.__cause__).__name__}")
+`}
+  testCases={[
+    { input: "load_config('{\"host\": \"localhost\", \"port\": 8080}')['host']", expected: "localhost", description: "Valid config should return host" },
+    { input: "load_config('{\"host\": \"localhost\", \"port\": 8080}')['port']", expected: "8080", description: "Valid config should return port" },
+  ]}
+/>
+
+### Ejercicio 7 — Decorador de Reintento
+
+<PythonRunner
+  title="Retry Decorator"
+  difficulty="difícil"
+  initialCode={`# Implement retry(max_attempts) — a decorator that retries a function
+# up to max_attempts times if it raises an exception.
+# If all attempts fail, re-raise the last exception.
+# Print "Attempt N failed: <error>" for each failed attempt.
+
+import functools
+
+def retry(max_attempts):
+    def decorator(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            # Your code here
+            pass
+        return wrapper
+    return decorator
+
+# Test: this function fails twice, then succeeds
+attempts = [0]
+
+@retry(max_attempts=3)
+def flaky():
+    attempts[0] += 1
+    if attempts[0] < 3:
+        raise ValueError(f"Not ready yet (attempt {attempts[0]})")
+    return "success"
+
+result = flaky()
+print(result)        # success
+print(attempts[0])   # 3
+`}
+  testCases={[
+    { input: "result", expected: "success", description: "Function should eventually succeed after retries" },
+    { input: "attempts[0]", expected: "3", description: "Function should have been called exactly 3 times" },
+  ]}
+/>
+
+### Ejercicio 8 — Jerarquía de Excepciones (Bonus)
+
+:::caution Desafío Anticipado
+Este ejercicio combina excepciones personalizadas con herencia de clases y conceptos de POO cubiertos en el siguiente módulo. Está incluido como un **desafío bonus**.
+:::
+
+<PythonRunner
+  title="Custom Exception Hierarchy"
+  difficulty="difícil"
+  initialCode={`# Build a small exception hierarchy for a file-processing application:
+#
+#   AppError (base)
+#   ├── ConfigError
+#   │   └── MissingKeyError(key)
+#   └── ProcessingError
+#       └── ParseError(line_number, message)
+#
+# Requirements:
+# - AppError.__init__(message) stores self.message
+# - MissingKeyError.__init__(key) sets a message "Missing config key: <key>"
+#   and stores self.key
+# - ParseError.__init__(line_number, message) sets a message
+#   "Parse error on line <N>: <message>" and stores self.line_number
+
+class AppError(Exception):
+    pass
+
+class ConfigError(AppError):
+    pass
+
+class MissingKeyError(ConfigError):
+    pass
+
+class ProcessingError(AppError):
+    pass
+
+class ParseError(ProcessingError):
+    pass
+
+# Test
+e1 = MissingKeyError("database_url")
+e2 = ParseError(42, "unexpected token")
+
+print(e1)   # Missing config key: database_url
+print(e2)   # Parse error on line 42: unexpected token
+print(isinstance(e1, AppError))    # True
+print(isinstance(e2, ProcessingError))  # True
+`}
+  testCases={[
+    { input: "str(MissingKeyError('host'))", expected: "Missing config key: host", description: "MissingKeyError message should include the key" },
+    { input: "str(ParseError(10, 'bad token'))", expected: "Parse error on line 10: bad token", description: "ParseError message should include line number" },
+    { input: "isinstance(MissingKeyError('x'), AppError)", expected: "True", description: "MissingKeyError should be an instance of AppError" },
+    { input: "isinstance(ParseError(1, 'err'), ConfigError)", expected: "False", description: "ParseError should NOT be an instance of ConfigError" },
+  ]}
+/>
