@@ -1,0 +1,110 @@
+{
+  "Home": {
+    "message": "Inicio",
+    "description": "Navbar home link label"
+  },
+  "Course": {
+    "message": "Curso",
+    "description": "Navbar course link label"
+  },
+  "GitHub": {
+    "message": "GitHub",
+    "description": "Navbar GitHub link label"
+  },
+  "Start Learning": {
+    "message": "Empezar a Aprender",
+    "description": "Hero CTA button"
+  },
+  "What is this course?": {
+    "message": "¿Qué es este curso?",
+    "description": "Homepage section heading"
+  },
+  "Python From Zero to Hero is a comprehensive, hands-on Python course that takes you from absolute beginner to advanced developer. Each module combines theory with interactive exercises you can run locally, plus real-world projects to build your portfolio.": {
+    "message": "Python de Cero a Héroe es un curso completo y práctico de Python que te lleva desde principiante absoluto hasta desarrollador avanzado. Cada módulo combina teoría con ejercicios interactivos que puedes ejecutar localmente, más proyectos del mundo real para construir tu portafolio.",
+    "description": "Homepage course description"
+  },
+  "Explore the Course": {
+    "message": "Explorar el Curso",
+    "description": "Homepage explore course button"
+  },
+  "What you will learn": {
+    "message": "Lo que aprenderás",
+    "description": "Homepage learn section heading"
+  },
+  "Python fundamentals from scratch": {
+    "message": "Fundamentos de Python desde cero",
+    "description": "Homepage learn list item"
+  },
+  "Functions, modules, and OOP": {
+    "message": "Funciones, módulos y POO",
+    "description": "Homepage learn list item"
+  },
+  "Decorators, generators, and async patterns": {
+    "message": "Decoradores, generadores y patrones asíncronos",
+    "description": "Homepage learn list item"
+  },
+  "Real-world projects and exercises": {
+    "message": "Proyectos y ejercicios del mundo real",
+    "description": "Homepage learn list item"
+  },
+  "Testing, debugging, and best practices": {
+    "message": "Pruebas, depuración y mejores prácticas",
+    "description": "Homepage learn list item"
+  },
+  "Design patterns and performance optimization": {
+    "message": "Patrones de diseño y optimización del rendimiento",
+    "description": "Homepage learn list item"
+  },
+  "Help Improve This Course": {
+    "message": "Ayuda a Mejorar Este Curso",
+    "description": "Homepage contribute section heading"
+  },
+  "This project thrives on community contributions. Whether you are learning Python or are an experienced developer, your insights are valuable!": {
+    "message": "Este proyecto prospera con las contribuciones de la comunidad. Ya seas un aprendiz de Python o un desarrollador experimentado, ¡tus ideas son valiosas!",
+    "description": "Homepage contribute description"
+  },
+  "Contribute to the Project": {
+    "message": "Contribuir al Proyecto",
+    "description": "Homepage contribute button"
+  },
+  "More Resources": {
+    "message": "Más Recursos",
+    "description": "Homepage more resources section heading"
+  },
+  "Docs": {
+    "message": "Documentación",
+    "description": "Footer docs section title"
+  },
+  "Connect": {
+    "message": "Conectar",
+    "description": "Footer connect section title"
+  },
+  "How to use these exercises": {
+    "message": "Cómo usar estos ejercicios",
+    "description": "Sidebar label for usage guide"
+  },
+  "Beginner": {
+    "message": "Principiante",
+    "description": "Sidebar category label"
+  },
+  "Intermediate": {
+    "message": "Intermedio",
+    "description": "Sidebar category label"
+  },
+  "Advanced": {
+    "message": "Avanzado",
+    "description": "Sidebar category label"
+  },
+  "Get the Ebook": {
+    "message": "Obtener el Ebook",
+    "description": "Ebook CTA button label"
+  },
+  "View JS Course": {
+    "message": "Ver Curso de JS",
+    "description": "JS course card link label"
+  },
+  "View AWS Cheatsheet": {
+    "message": "Ver Cheatsheet de AWS",
+    "description": "AWS cheatsheet card link label"
+  }
+}

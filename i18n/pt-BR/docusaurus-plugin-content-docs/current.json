@@ -1,0 +1,30 @@
+{
+  "sidebar.courseSidebar.category.Beginner": {
+    "message": "Iniciante",
+    "description": "The label for category Beginner in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Intermediate": {
+    "message": "Intermediário",
+    "description": "The label for category Intermediate in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Advanced": {
+    "message": "Avançado",
+    "description": "The label for category Advanced in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Foundations": {
+    "message": "Fundamentos",
+    "description": "The label for category Foundations in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Functions": {
+    "message": "Funções",
+    "description": "The label for category Functions in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Object-Oriented Programming": {
+    "message": "Programação Orientada a Objetos",
+    "description": "The label for category OOP in sidebar courseSidebar"
+  },
+  "sidebar.courseSidebar.category.Practical Projects": {
+    "message": "Projetos Práticos",
+    "description": "The label for category Practical Projects in sidebar courseSidebar"
+  }
+}

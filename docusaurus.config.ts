@@ -21,7 +21,12 @@ const config: Config = {
 
   i18n: {
     defaultLocale: 'en',
-    locales: ['en'],
+    locales: ['en', 'pt-BR', 'es'],
+    localeConfigs: {
+      en: { label: 'English' },
+      'pt-BR': { label: 'Português (BR)' },
+      es: { label: 'Español' },
+    },
   },
 
   presets: [
@@ -56,6 +61,7 @@ const config: Config = {
       items: [
         {type: 'docSidebar', sidebarId: 'courseSidebar', position: 'left', label: 'Course'},
         {href: 'https://github.com/EmersonBraun/python-excercices', label: 'GitHub', position: 'right'},
+        {type: 'localeDropdown', position: 'right'},
       ],
     },
     footer: {
@@ -82,6 +88,12 @@ const config: Config = {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
       additionalLanguages: ['bash', 'json', 'yaml', 'sql', 'python'],
+    },
+    algolia: {
+      appId: process.env.ALGOLIA_APP_ID || 'placeholder',
+      apiKey: process.env.ALGOLIA_API_KEY || 'placeholder',
+      indexName: process.env.ALGOLIA_INDEX_NAME || 'python-from-zero-to-hero',
+      contextualSearch: true,
     },
   } satisfies Preset.ThemeConfig,
 };
