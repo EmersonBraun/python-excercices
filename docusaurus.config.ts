@@ -5,29 +5,23 @@ import type * as Preset from '@docusaurus/preset-classic';
 const config: Config = {
   title: 'Python From Zero to Hero',
   tagline: 'Master Python from fundamentals to advanced concepts with interactive exercises',
-  favicon: 'img/favicon.ico',
 
   future: {
     v4: true,
   },
 
   url: 'https://emersonbraun.github.io',
-  baseUrl: '/python-from-zero-to-hero/',
+  baseUrl: '/python-excercices/',
 
   organizationName: 'EmersonBraun',
-  projectName: 'python-from-zero-to-hero',
+  projectName: 'python-excercices',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
 
   i18n: {
     defaultLocale: 'en',
-    locales: ['en', 'pt-BR', 'es'],
-    localeConfigs: {
-      en: {label: 'English', direction: 'ltr'},
-      'pt-BR': {label: 'Português', direction: 'ltr'},
-      es: {label: 'Español', direction: 'ltr'},
-    },
+    locales: ['en'],
   },
 
   presets: [
@@ -36,7 +30,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/EmersonBraun/python-excercices/blob/master',
+          editUrl: 'https://github.com/EmersonBraun/python-excercices/edit/feat/curriculum-exercises/',
         },
         blog: false,
         theme: {
@@ -47,7 +41,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/logo.png',
+    image: 'img/logo.svg',
     metadata: [
       {name: 'keywords', content: 'python, course, tutorial, beginner, advanced, learn, exercises, projects'},
     ],
@@ -61,7 +55,6 @@ const config: Config = {
       logo: {alt: 'Python From Zero to Hero Logo', src: 'img/logo.svg'},
       items: [
         {type: 'docSidebar', sidebarId: 'courseSidebar', position: 'left', label: 'Course'},
-        {type: 'localeDropdown', position: 'right'},
         {href: 'https://github.com/EmersonBraun/python-excercices', label: 'GitHub', position: 'right'},
       ],
     },
