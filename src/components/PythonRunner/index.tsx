@@ -79,7 +79,13 @@ export default function PythonRunner({
 
       // Create an isolated namespace for this run so multiple PythonRunner
       // instances on the same page don't share state.
-      const globals = pyodide.globals.get('dict')();
+      // Use runPython to create the dict so __builtins__ is available in the
+      // namespace — without it, built-in functions like print/str/len/range
+      // are not accessible and code fails silently or throws PythonError.
+      const globals = pyodide.runPython(`
+d = dict(__builtins__=__builtins__)
+d
+`);
 
       // Capture stdout and stderr within the isolated namespace
       pyodide.runPython(`
