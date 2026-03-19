@@ -122,16 +122,17 @@ See [Format String Syntax](https://docs.python.org/3/library/string.html#formats
 
 ## Exercises
 
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
 ### Exercise 1 — Hello Variables
 
 <PythonRunner
   title="Hello Variables"
   difficulty="easy"
-  initialCode={`# Create two variables:
-# - name: your name as a string
-# - version: the number 3.12 (a float)
-# Then print: "Welcome to Python 3.12"
-# (use an f-string with your variables)
+  initialCode={`# Variables are already defined. Your task:
+# Print a message using an f-string that says "Welcome to Python 3.12"
 
 name = "Python"
 version = 3.12
@@ -223,100 +224,111 @@ quantity = 3
   ]}
 />
 
-### Exercise 5 — Mini Calculator
+### Exercise 5 — Type Conversion
 
 <PythonRunner
-  title="Mini Calculator"
+  title="Type Conversion"
   difficulty="medium"
-  initialCode={`# Build a mini calculator using functions.
+  initialCode={`# Practice converting between Python types.
 #
-# Define four functions that each take two numbers (a, b):
-#   add(a, b)       -> returns a + b
-#   subtract(a, b)  -> returns a - b
-#   multiply(a, b)  -> returns a * b
-#   divide(a, b)    -> returns a / b (return 0 if b is 0)
-#
+# 1. Given the string "42", convert it to an int and store in num_int
+# 2. Given the string "42", convert it to a float and store in num_float
+# 3. Given the float 3.14, convert it to an int and store in truncated
+#    (note: int() truncates, it does NOT round)
+# 4. Given the int 0, convert it to a bool and store in zero_bool
+# 5. Given the int 42, convert it to a bool and store in nonzero_bool
 
-def add(a, b):
-    pass
+text = "42"
+pi = 3.14
 
-def subtract(a, b):
-    pass
-
-def multiply(a, b):
-    pass
-
-def divide(a, b):
-    pass
+num_int = None      # convert text to int
+num_float = None    # convert text to float
+truncated = None    # convert pi to int
+zero_bool = None    # convert 0 to bool
+nonzero_bool = None # convert 42 to bool
 `}
   testCases={[
-    { input: "add(3, 5)", expected: "8", description: "add(3, 5) should return 8" },
-    { input: "subtract(10, 4)", expected: "6", description: "subtract(10, 4) should return 6" },
-    { input: "multiply(3, 7)", expected: "21", description: "multiply(3, 7) should return 21" },
-    { input: "divide(10, 3)", expected: "3.3333333333333335", description: "divide(10, 3) should return 3.333..." },
-    { input: "divide(5, 0)", expected: "0", description: "divide(5, 0) should return 0 (safe division)" },
+    { input: "num_int", expected: "42", description: "int('42') should be 42" },
+    { input: "num_float", expected: "42.0", description: "float('42') should be 42.0" },
+    { input: "truncated", expected: "3", description: "int(3.14) should be 3 (truncated)" },
+    { input: "zero_bool", expected: "False", description: "bool(0) should be False" },
+    { input: "nonzero_bool", expected: "True", description: "bool(42) should be True" },
   ]}
 />
 
-### Exercise 6 — String Reversal
+### Exercise 6 — String Explorer
 
 <PythonRunner
-  title="String Reversal"
+  title="String Explorer"
   difficulty="medium"
-  initialCode={`# String manipulation challenge!
+  initialCode={`# Use string methods to transform text.
 #
-# 1. Write a function reverse_string(s) that returns the string reversed.
-#    Example: reverse_string("hello") -> "olleh"
+# Given the string:
+text = "hello, world"
 #
-# 2. Write a function is_palindrome(s) that returns True if the string
-#    reads the same forwards and backwards (case-insensitive).
-#    Example: is_palindrome("Racecar") -> True
+# 1. Create upper_text — text converted to ALL CAPS
+# 2. Create lower_text — text converted to all lowercase
+# 3. Create title_text — text converted to Title Case
+# 4. Create replaced_text — text with "world" replaced by "python"
+# 5. Create text_length — the length of the original text (an int)
 
-def reverse_string(s):
-    pass
-
-def is_palindrome(s):
-    pass
+upper_text = None
+lower_text = None
+title_text = None
+replaced_text = None
+text_length = None
 `}
   testCases={[
-    { input: "reverse_string('hello')", expected: "olleh", description: "reverse_string('hello') should return 'olleh'" },
-    { input: "reverse_string('Python')", expected: "nohtyP", description: "reverse_string('Python') should return 'nohtyP'" },
-    { input: "is_palindrome('Racecar')", expected: "True", description: "is_palindrome('Racecar') should return True" },
-    { input: "is_palindrome('hello')", expected: "False", description: "is_palindrome('hello') should return False" },
+    { input: "upper_text", expected: "HELLO, WORLD", description: ".upper() should return 'HELLO, WORLD'" },
+    { input: "lower_text", expected: "hello, world", description: ".lower() should return 'hello, world'" },
+    { input: "title_text", expected: "Hello, World", description: ".title() should return 'Hello, World'" },
+    { input: "replaced_text", expected: "hello, python", description: ".replace('world', 'python') should return 'hello, python'" },
+    { input: "text_length", expected: "12", description: "len('hello, world') should be 12" },
   ]}
 />
 
-### Exercise 7 — FizzBuzz
+### Exercise 7 — Receipt Formatter
 
 <PythonRunner
-  title="FizzBuzz"
+  title="Receipt Formatter"
   difficulty="medium"
-  initialCode={`# The classic FizzBuzz challenge!
+  initialCode={`# Create a formatted receipt using f-strings with alignment.
 #
-# Write a function fizzbuzz(n) that returns a string:
-#   - "FizzBuzz" if n is divisible by both 3 and 5
-#   - "Fizz"     if n is divisible by 3 only
-#   - "Buzz"     if n is divisible by 5 only
-#   - str(n)     otherwise (the number as a string)
+# Given these items and prices:
+item1 = "Apples"
+price1 = 3.50
+item2 = "Bread"
+price2 = 2.75
+item3 = "Milk"
+price3 = 4.20
 #
-# Hint: use the modulo operator (%) to check divisibility.
+# 1. Create line1, line2, line3 where each line has:
+#    - item name left-aligned in a 12-character field
+#    - price right-aligned in a 6-character field with 2 decimal places
+#    Example: "Apples      $  3.50"
+#    Hint: use f"{item1:<12}$\\{price1:>6.2f}"
+#
+# 2. Create total_line formatted the same way with label "Total"
+#    and the sum of all prices.
 
-def fizzbuzz(n):
-    pass
-
-# Test it out:
-for i in range(1, 16):
-    print(fizzbuzz(i), end=" ")
+line1 = ""
+line2 = ""
+line3 = ""
+total_line = ""
 `}
   testCases={[
-    { input: "fizzbuzz(3)", expected: "Fizz", description: "fizzbuzz(3) should return 'Fizz'" },
-    { input: "fizzbuzz(5)", expected: "Buzz", description: "fizzbuzz(5) should return 'Buzz'" },
-    { input: "fizzbuzz(15)", expected: "FizzBuzz", description: "fizzbuzz(15) should return 'FizzBuzz'" },
-    { input: "fizzbuzz(7)", expected: "7", description: "fizzbuzz(7) should return '7'" },
+    { input: "line1", expected: "Apples      $  3.50", description: "line1 should be 'Apples      $  3.50'" },
+    { input: "line2", expected: "Bread       $  2.75", description: "line2 should be 'Bread       $  2.75'" },
+    { input: "line3", expected: "Milk        $  4.20", description: "line3 should be 'Milk        $  4.20'" },
+    { input: "total_line", expected: "Total       $ 10.45", description: "total_line should be 'Total       $ 10.45'" },
   ]}
 />
 
-### Exercise 8 — Vowel Counter
+### Exercise 8 — Vowel Counter (Bonus)
+
+:::caution Preview Challenge
+This exercise uses concepts (loops, conditionals, dictionaries) from upcoming modules. It is included as a **bonus challenge** for those who want to explore ahead.
+:::
 
 <PythonRunner
   title="Vowel Counter"
