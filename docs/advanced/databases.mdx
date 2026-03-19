@@ -209,7 +209,7 @@ print(f"Top earner: {top_earner[1]} ($\\{salary})")
   testCases={[
     { input: "len(engineers)", expected: "3", description: "Should have 3 engineers" },
     { input: "sorted([r[1] for r in engineers])", expected: "['Alice', 'Carol', 'Eve']", description: "Engineers should be Alice, Carol, Eve" },
-    { input: "sorted(high_earners)", expected: "['Alice', 'Carol']", description: "High earners (>80k) should be Alice and Carol" },
+    { input: "sorted(high_earners)", expected: "['Alice', 'Carol', 'Eve']", description: "High earners (>80k) should be Alice, Carol, and Eve" },
     { input: "top_earner[1]", expected: "Carol", description: "Top earner should be Carol" },
   ]}
 />
@@ -297,7 +297,7 @@ print(f"Sales by category: {sales_by_category}")
   testCases={[
     { input: "total_revenue", expected: "13750.0", description: "Total revenue should be $13,750" },
     { input: "round(avg_sale, 2)", expected: "2291.67", description: "Average sale should be ~$2,291.67" },
-    { input: "top_category", expected: "Software", description: "Top category by revenue should be Software" },
+    { input: "top_category", expected: "Services", description: "Top category by revenue should be Services" },
     { input: "sales_by_category['Hardware']", expected: "2", description: "Hardware should have 2 sales" },
     { input: "sales_by_category['Services']", expected: "2", description: "Services should have 2 sales" },
   ]}

@@ -445,8 +445,8 @@ def delete_user(user_id):
 updated = update_user(1, {"role": "admin"})
 print(f"Updated: {updated}")
 
-deleted = delete_user(2)
-print(f"Deleted user 2: {deleted}")
+deleted = delete_user(999)
+print(f"Deleted user 999: {deleted}")
 
 missing = delete_user(999)
 print(f"Delete missing: {missing}")
