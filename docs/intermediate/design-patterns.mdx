@@ -1,0 +1,711 @@
+---
+title: Design Patterns in Python
+sidebar_label: Design Patterns
+sidebar_position: 6
+---
+
+# Design Patterns in Python
+
+In this module you will learn how classic **design patterns** are expressed in idiomatic Python. Patterns are proven, reusable solutions to recurring software design problems. Python's first-class functions, decorators, and dynamic typing often make patterns more concise than in other languages. By the end you will be able to recognise and apply Factory, Singleton, Observer, Strategy, and Iterator patterns in real code.
+
+## Learning Objectives
+
+- Understand why design patterns matter and when to apply them
+- Implement the **Factory** pattern to decouple object creation
+- Use the **Singleton** pattern to enforce a single instance
+- Apply the **Observer** pattern for event-driven communication
+- Use the **Strategy** pattern to swap algorithms at runtime
+- Build the **Iterator** pattern with `__iter__` and `__next__`
+
+---
+
+## Theory
+
+### Why Design Patterns?
+
+Design patterns are architectural blueprints. They do not tell you the exact code to write — they describe the *structure* of a solution so you can adapt it to your problem. Learning them lets you:
+
+- Communicate intent with other developers using a shared vocabulary
+- Avoid reinventing solutions to known problems
+- Write code that is easier to extend and test
+
+:::note
+In Python, many classic patterns (Command, Template Method, Strategy) can be simplified with first-class functions instead of elaborate class hierarchies. Pythonic patterns lean on callables, closures, and generators.
+:::
+
+### Factory Pattern
+
+A **Factory** centralises object creation, hiding which concrete class is instantiated. This decouples client code from implementation details:
+
+```python
+class Dog:
+    def speak(self): return "Woof!"
+
+class Cat:
+    def speak(self): return "Meow!"
+
+class AnimalFactory:
+    _registry = {"dog": Dog, "cat": Cat}
+
+    @classmethod
+    def create(cls, kind):
+        animal_class = cls._registry.get(kind)
+        if animal_class is None:
+            raise ValueError(f"Unknown animal: {kind!r}")
+        return animal_class()
+
+animal = AnimalFactory.create("dog")
+print(animal.speak())   # Woof!
+```
+
+See [Factory Method — Refactoring Guru](https://refactoring.guru/design-patterns/factory-method).
+
+### Singleton Pattern
+
+A **Singleton** ensures that only one instance of a class can exist. In Python, the cleanest approach overrides `__new__`:
+
+```python
+class Config:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance.settings = {}
+        return cls._instance
+
+c1 = Config()
+c2 = Config()
+print(c1 is c2)   # True — same object
+```
+
+:::tip
+Singletons are useful for configuration objects, logging, or connection pools — anything where exactly one shared instance makes sense. However, they can make testing harder because they carry global state.
+:::
+
+### Observer Pattern
+
+The **Observer** (also called Publish/Subscribe or event system) lets objects subscribe to events published by another object. The publisher doesn't need to know who is listening:
+
+```python
+class EventEmitter:
+    def __init__(self):
+        self._listeners = {}
+
+    def on(self, event, callback):
+        self._listeners.setdefault(event, []).append(callback)
+
+    def emit(self, event, *args, **kwargs):
+        for cb in self._listeners.get(event, []):
+            cb(*args, **kwargs)
+
+emitter = EventEmitter()
+emitter.on("login", lambda user: print(f"{user} logged in"))
+emitter.emit("login", "Alice")   # Alice logged in
+```
+
+See [Observer Pattern](https://refactoring.guru/design-patterns/observer).
+
+### Strategy Pattern
+
+The **Strategy** pattern defines a family of algorithms and makes them interchangeable. In Python, strategies are often plain functions or callables:
+
+```python
+def bubble_sort(data):
+    data = data[:]
+    for i in range(len(data)):
+        for j in range(len(data) - i - 1):
+            if data[j] > data[j+1]:
+                data[j], data[j+1] = data[j+1], data[j]
+    return data
+
+class Sorter:
+    def __init__(self, strategy=sorted):
+        self.strategy = strategy
+
+    def sort(self, data):
+        return self.strategy(data)
+
+s = Sorter(strategy=bubble_sort)
+print(s.sort([3, 1, 4, 1, 5]))   # [1, 1, 3, 4, 5]
+```
+
+:::tip
+When a strategy can be expressed as a single function, pass the function directly rather than wrapping it in a class. Python's first-class functions make this pattern very lightweight.
+:::
+
+### Iterator Pattern
+
+An **Iterator** provides sequential access to elements without exposing the underlying data structure. In Python, you implement `__iter__` and `__next__`:
+
+```python
+class CountDown:
+    def __init__(self, start):
+        self.current = start
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.current <= 0:
+            raise StopIteration
+        val = self.current
+        self.current -= 1
+        return val
+
+for n in CountDown(3):
+    print(n)   # 3, 2, 1
+```
+
+Alternatively, use a **generator function** with `yield`:
+
+```python
+def count_down(start):
+    while start > 0:
+        yield start
+        start -= 1
+```
+
+See [Iterator Types](https://docs.python.org/3/library/stdtypes.html#iterator-types) and [Generators](https://docs.python.org/3/reference/expressions.html#generator-expressions).
+
+---
+
+## Exercises
+
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
+### Exercise 1 — Simple Factory
+
+<PythonRunner
+  title="Simple Factory"
+  difficulty="easy"
+  initialCode={`# Implement a ShapeFactory that creates shapes by name.
+# Supported shapes: "circle", "rectangle", "triangle"
+# Each shape class needs an area() method.
+#
+# Circle(radius):     area = 3.14159 * r^2
+# Rectangle(w, h):    area = w * h
+# Triangle(base, h):  area = 0.5 * base * h
+#
+# ShapeFactory.create(kind, *args) returns the correct shape instance.
+# Raise ValueError for unknown kinds.
+
+class Circle:
+    def __init__(self, radius):
+        self.radius = radius
+    def area(self):
+        return 3.14159 * self.radius ** 2
+
+class Rectangle:
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+    def area(self):
+        return self.width * self.height
+
+class Triangle:
+    def __init__(self, base, height):
+        self.base = base
+        self.height = height
+    def area(self):
+        return 0.5 * self.base * self.height
+
+class ShapeFactory:
+    @classmethod
+    def create(cls, kind, *args):
+        # Your code here
+        pass
+
+s1 = ShapeFactory.create("circle", 5)
+s2 = ShapeFactory.create("rectangle", 4, 6)
+s3 = ShapeFactory.create("triangle", 3, 8)
+print(round(s1.area(), 5))  # 78.53975
+print(s2.area())            # 24
+print(s3.area())            # 12.0
+`}
+  testCases={[
+    { input: "round(ShapeFactory.create('circle', 5).area(), 5)", expected: "78.53975", description: "Circle area should be PI * r^2" },
+    { input: "ShapeFactory.create('rectangle', 4, 6).area()", expected: "24", description: "Rectangle area should be width * height" },
+    { input: "ShapeFactory.create('triangle', 3, 8).area()", expected: "12.0", description: "Triangle area should be 0.5 * base * height" },
+  ]}
+/>
+
+### Exercise 2 — Singleton Logger
+
+<PythonRunner
+  title="Singleton Logger"
+  difficulty="easy"
+  initialCode={`# Implement a Logger Singleton that:
+# - Has a single shared instance (use __new__ pattern)
+# - Maintains a list of log messages: self.logs = []
+# - log(self, message) appends message to self.logs
+# - get_logs(self) returns a copy of self.logs
+# - clear(self) empties self.logs
+#
+# Multiple calls to Logger() should return the SAME instance.
+
+class Logger:
+    _instance = None
+
+    def __new__(cls):
+        # Your code here
+        pass
+
+    def log(self, message):
+        pass
+
+    def get_logs(self):
+        pass
+
+    def clear(self):
+        pass
+
+logger1 = Logger()
+logger2 = Logger()
+logger1.log("App started")
+logger2.log("User logged in")
+print(logger1 is logger2)        # True
+print(logger1.get_logs())        # ['App started', 'User logged in']
+logger1.clear()
+print(logger2.get_logs())        # []  (same instance!)
+`}
+  testCases={[
+    { input: "Logger() is Logger()", expected: "True", description: "Logger() should always return the same instance" },
+    { input: "l = Logger(); l.clear(); l.log('x'); l.log('y'); len(l.get_logs())", expected: "2", description: "log() should add messages" },
+  ]}
+/>
+
+### Exercise 3 — Observer Event System
+
+<PythonRunner
+  title="Observer Event System"
+  difficulty="easy"
+  initialCode={`# Implement a simple EventEmitter class.
+#
+# EventEmitter:
+# - on(event, callback)  — register callback for event
+# - off(event, callback) — unregister callback
+# - emit(event, *args)   — call all registered callbacks with args
+#                          (silently ignore unknown events)
+# - listener_count(event) — return number of listeners for event
+
+class EventEmitter:
+    def __init__(self):
+        self._listeners = {}
+
+    def on(self, event, callback):
+        # Your code here
+        pass
+
+    def off(self, event, callback):
+        # Your code here
+        pass
+
+    def emit(self, event, *args):
+        # Your code here
+        pass
+
+    def listener_count(self, event):
+        return len(self._listeners.get(event, []))
+
+# Test
+results = []
+emitter = EventEmitter()
+
+def on_data(value):
+    results.append(value)
+
+emitter.on("data", on_data)
+emitter.emit("data", 42)
+emitter.emit("data", 99)
+print(results)                    # [42, 99]
+print(emitter.listener_count("data"))  # 1
+emitter.off("data", on_data)
+emitter.emit("data", 0)
+print(results)                    # [42, 99] — callback was removed
+`}
+  testCases={[
+    { input: "results", expected: "[42, 99]", description: "emit() should call registered callbacks" },
+    { input: "emitter.listener_count('data')", expected: "0", description: "off() should remove the listener" },
+  ]}
+/>
+
+### Exercise 4 — Strategy Sorter
+
+<PythonRunner
+  title="Strategy Sorter"
+  difficulty="medium"
+  initialCode={`# Implement a DataProcessor class that uses the Strategy pattern.
+# The processing strategy is a callable that takes a list and returns a list.
+#
+# DataProcessor(strategy):
+# - process(data) → applies strategy to data and returns the result
+# - set_strategy(strategy) → replace the current strategy
+#
+# Also define these ready-made strategies as standalone functions:
+# - sort_ascending(data)   → sorted copy, ascending
+# - sort_descending(data)  → sorted copy, descending
+# - remove_duplicates(data) → unique values, original order preserved
+# - filter_positive(data)  → only values > 0
+
+def sort_ascending(data):
+    pass
+
+def sort_descending(data):
+    pass
+
+def remove_duplicates(data):
+    pass
+
+def filter_positive(data):
+    pass
+
+class DataProcessor:
+    def __init__(self, strategy):
+        self.strategy = strategy
+
+    def set_strategy(self, strategy):
+        self.strategy = strategy
+
+    def process(self, data):
+        return self.strategy(data)
+
+proc = DataProcessor(sort_ascending)
+print(proc.process([3, 1, 4, 1, 5]))       # [1, 1, 3, 4, 5]
+
+proc.set_strategy(remove_duplicates)
+print(proc.process([3, 1, 4, 1, 5]))       # [3, 1, 4, 5]
+
+proc.set_strategy(filter_positive)
+print(proc.process([-2, 3, -1, 0, 5]))     # [3, 5]
+`}
+  testCases={[
+    { input: "sort_ascending([3,1,4,1,5])", expected: "[1, 1, 3, 4, 5]", description: "sort_ascending should sort in ascending order" },
+    { input: "sort_descending([3,1,4,1,5])", expected: "[5, 4, 3, 1, 1]", description: "sort_descending should sort in descending order" },
+    { input: "remove_duplicates([3,1,4,1,5])", expected: "[3, 1, 4, 5]", description: "remove_duplicates should preserve order" },
+    { input: "filter_positive([-2, 3, -1, 0, 5])", expected: "[3, 5]", description: "filter_positive should keep only values > 0" },
+  ]}
+/>
+
+### Exercise 5 — Custom Iterator
+
+<PythonRunner
+  title="Custom Iterator"
+  difficulty="medium"
+  initialCode={`# Implement a Range2D iterator that yields (row, col) pairs
+# for a 2D grid of given dimensions.
+# Iterates row by row: (0,0), (0,1), ..., (rows-1, cols-1)
+#
+# Range2D(rows, cols):
+# - __iter__(self) → returns self
+# - __next__(self) → yields the next (row, col) tuple
+# - raises StopIteration when all cells have been visited
+# - __len__(self) → total number of cells
+
+class Range2D:
+    def __init__(self, rows, cols):
+        self.rows = rows
+        self.cols = cols
+        self._row = 0
+        self._col = 0
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        # Your code here
+        pass
+
+    def __len__(self):
+        return self.rows * self.cols
+
+grid = Range2D(2, 3)
+print(list(grid))
+# [(0,0), (0,1), (0,2), (1,0), (1,1), (1,2)]
+print(len(Range2D(3, 4)))   # 12
+`}
+  testCases={[
+    { input: "list(Range2D(2, 3))", expected: "[(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)]", description: "Range2D should iterate all (row, col) pairs" },
+    { input: "len(Range2D(3, 4))", expected: "12", description: "__len__ should return rows * cols" },
+    { input: "list(Range2D(1, 1))", expected: "[(0, 0)]", description: "1x1 grid should yield one element" },
+  ]}
+/>
+
+### Exercise 6 — Library System with Factory
+
+<PythonRunner
+  title="Library System"
+  difficulty="medium"
+  initialCode={`# Model a library using a combination of Factory and composition.
+#
+# LibraryItem base class:
+#   - __init__(title, item_id)
+#   - checkout() → sets checked_out = True; raises ValueError if already out
+#   - return_item() → sets checked_out = False
+#   - __str__ → "<type>: <title> [available/checked out]"
+#
+# Book(LibraryItem): type_name = "Book", extra attr: author
+# DVD(LibraryItem):  type_name = "DVD",  extra attr: director
+# Magazine(LibraryItem): type_name = "Magazine", extra attr: issue_number
+#
+# LibraryFactory.create(kind, title, item_id, **kwargs)
+# kind: "book", "dvd", "magazine"
+
+class LibraryItem:
+    type_name = "Item"
+
+    def __init__(self, title, item_id):
+        self.title = title
+        self.item_id = item_id
+        self.checked_out = False
+
+    def checkout(self):
+        if self.checked_out:
+            raise ValueError(f"{self.title!r} is already checked out")
+        self.checked_out = True
+
+    def return_item(self):
+        self.checked_out = False
+
+    def __str__(self):
+        status = "checked out" if self.checked_out else "available"
+        return f"{self.type_name}: {self.title} [{status}]"
+
+class Book(LibraryItem):
+    type_name = "Book"
+    def __init__(self, title, item_id, author):
+        super().__init__(title, item_id)
+        self.author = author
+
+class DVD(LibraryItem):
+    type_name = "DVD"
+    def __init__(self, title, item_id, director):
+        super().__init__(title, item_id)
+        self.director = director
+
+class Magazine(LibraryItem):
+    type_name = "Magazine"
+    def __init__(self, title, item_id, issue_number):
+        super().__init__(title, item_id)
+        self.issue_number = issue_number
+
+class LibraryFactory:
+    _registry = {
+        "book": Book,
+        "dvd": DVD,
+        "magazine": Magazine,
+    }
+
+    @classmethod
+    def create(cls, kind, title, item_id, **kwargs):
+        # Your code here
+        pass
+
+book = LibraryFactory.create("book", "Clean Code", "B001", author="Robert Martin")
+dvd  = LibraryFactory.create("dvd",  "Inception",  "D001", director="Nolan")
+print(book)        # Book: Clean Code [available]
+book.checkout()
+print(book)        # Book: Clean Code [checked out]
+print(dvd.director)  # Nolan
+`}
+  testCases={[
+    { input: "str(LibraryFactory.create('book','Test','B1',author='Auth'))", expected: "Book: Test [available]", description: "New book should show as available" },
+    { input: "b = LibraryFactory.create('book','Test','B1',author='A'); b.checkout(); str(b)", expected: "Book: Test [checked out]", description: "After checkout, item should show checked out" },
+    { input: "LibraryFactory.create('dvd','Film','D1',director='Dir').director", expected: "Dir", description: "DVD director attribute should be set" },
+  ]}
+/>
+
+### Exercise 7 — Observer with Stock Prices
+
+<PythonRunner
+  title="Stock Price Observer"
+  difficulty="hard"
+  initialCode={`# Implement a stock price monitoring system using the Observer pattern.
+#
+# Stock:
+#   - __init__(symbol, price)
+#   - subscribe(observer)   — add observer (must have .update(stock) method)
+#   - unsubscribe(observer) — remove observer
+#   - set_price(new_price)  — updates price and notifies all observers
+#
+# PriceAlertObserver(threshold):
+#   - update(stock) — if stock.price > threshold, append
+#     f"ALERT: {stock.symbol} hit {stock.price}" to self.alerts
+#
+# LogObserver:
+#   - update(stock) — appends f"{stock.symbol}: {stock.price}" to self.log
+
+class Stock:
+    def __init__(self, symbol, price):
+        self.symbol = symbol
+        self.price = price
+        self._observers = []
+
+    def subscribe(self, observer):
+        self._observers.append(observer)
+
+    def unsubscribe(self, observer):
+        self._observers.remove(observer)
+
+    def set_price(self, new_price):
+        self.price = new_price
+        # Your code here — notify observers
+        pass
+
+class PriceAlertObserver:
+    def __init__(self, threshold):
+        self.threshold = threshold
+        self.alerts = []
+
+    def update(self, stock):
+        # Your code here
+        pass
+
+class LogObserver:
+    def __init__(self):
+        self.log = []
+
+    def update(self, stock):
+        # Your code here
+        pass
+
+stock = Stock("AAPL", 150)
+alert = PriceAlertObserver(threshold=170)
+logger = LogObserver()
+
+stock.subscribe(alert)
+stock.subscribe(logger)
+
+stock.set_price(165)
+stock.set_price(175)
+stock.set_price(180)
+
+print(alert.alerts)
+# ['ALERT: AAPL hit 175', 'ALERT: AAPL hit 180']
+print(logger.log)
+# ['AAPL: 165', 'AAPL: 175', 'AAPL: 180']
+`}
+  testCases={[
+    { input: "alert.alerts", expected: "['ALERT: AAPL hit 175', 'ALERT: AAPL hit 180']", description: "Alert should fire only when price exceeds threshold" },
+    { input: "logger.log", expected: "['AAPL: 165', 'AAPL: 175', 'AAPL: 180']", description: "Logger should record all price changes" },
+  ]}
+/>
+
+### Exercise 8 — Inventory System with Multiple Patterns (Bonus)
+
+:::caution Preview Challenge
+This exercise combines Factory, Observer, and Iterator patterns together in a small inventory management system. It is included as a **bonus challenge**.
+:::
+
+<PythonRunner
+  title="Inventory Management System"
+  difficulty="hard"
+  initialCode={`# Build a mini inventory system that uses three patterns together:
+#
+# 1. FACTORY — ItemFactory.create(kind, name, price, qty)
+#    Supported kinds: "physical", "digital"
+#    PhysicalItem: has weight attribute
+#    DigitalItem: has download_url attribute
+#
+# 2. OBSERVER — Inventory notifies observers when stock falls below threshold
+#    LowStockObserver.update(item) appends f"LOW STOCK: {item.name} ({item.qty} left)"
+#    to self.warnings when item.qty < 5
+#
+# 3. ITERATOR — Inventory is iterable, yielding items one by one
+#
+# Inventory:
+# - add(item)
+# - sell(name, qty) — reduces qty, notifies observers
+# - subscribe(observer) / unsubscribe(observer)
+# - __iter__ / __next__ for iteration
+
+class PhysicalItem:
+    def __init__(self, name, price, qty, weight):
+        self.name = name
+        self.price = price
+        self.qty = qty
+        self.weight = weight
+
+class DigitalItem:
+    def __init__(self, name, price, qty, download_url):
+        self.name = name
+        self.price = price
+        self.qty = qty
+        self.download_url = download_url
+
+class ItemFactory:
+    @classmethod
+    def create(cls, kind, name, price, qty, **kwargs):
+        if kind == "physical":
+            return PhysicalItem(name, price, qty, **kwargs)
+        elif kind == "digital":
+            return DigitalItem(name, price, qty, **kwargs)
+        raise ValueError(f"Unknown item kind: {kind!r}")
+
+class LowStockObserver:
+    def __init__(self):
+        self.warnings = []
+
+    def update(self, item):
+        if item.qty < 5:
+            self.warnings.append(f"LOW STOCK: {item.name} ({item.qty} left)")
+
+class Inventory:
+    def __init__(self):
+        self._items = {}
+        self._observers = []
+        self._iter_keys = None
+        self._iter_index = 0
+
+    def add(self, item):
+        self._items[item.name] = item
+
+    def subscribe(self, observer):
+        self._observers.append(observer)
+
+    def unsubscribe(self, observer):
+        self._observers.remove(observer)
+
+    def sell(self, name, qty):
+        item = self._items[name]
+        item.qty -= qty
+        for obs in self._observers:
+            obs.update(item)
+
+    def __iter__(self):
+        self._iter_keys = list(self._items.keys())
+        self._iter_index = 0
+        return self
+
+    def __next__(self):
+        if self._iter_index >= len(self._iter_keys):
+            raise StopIteration
+        key = self._iter_keys[self._iter_index]
+        self._iter_index += 1
+        return self._items[key]
+
+# Test
+inv = Inventory()
+watcher = LowStockObserver()
+inv.subscribe(watcher)
+
+inv.add(ItemFactory.create("physical", "Widget", 9.99, 10, weight=0.5))
+inv.add(ItemFactory.create("digital", "eBook", 4.99, 100, download_url="http://example.com"))
+
+inv.sell("Widget", 7)   # qty drops to 3 → triggers LOW STOCK
+inv.sell("Widget", 1)   # qty drops to 2 → triggers LOW STOCK again
+
+print(watcher.warnings)
+# ['LOW STOCK: Widget (3 left)', 'LOW STOCK: Widget (2 left)']
+
+names = [item.name for item in inv]
+print(names)   # ['Widget', 'eBook']
+`}
+  testCases={[
+    { input: "watcher.warnings[0]", expected: "LOW STOCK: Widget (3 left)", description: "First warning should fire at qty=3" },
+    { input: "len(watcher.warnings)", expected: "2", description: "Should have 2 low-stock warnings" },
+    { input: "[item.name for item in inv]", expected: "['Widget', 'eBook']", description: "Inventory should be iterable" },
+  ]}
+/>
