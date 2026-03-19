@@ -4,6 +4,9 @@ import Layout from '@theme/Layout';
 import clsx from 'clsx';
 import {type ReactElement} from 'react';
 
+import AwsCheatsheetCard from '../components/AwsCheatsheetCard';
+import EbookCta from '../components/EbookCta';
+import JsCourseCard from '../components/JsCourseCard';
 import styles from './index.module.css';
 
 function HomepageHeader() {
@@ -75,6 +78,25 @@ export default function Home(): ReactElement {
                       href="https://github.com/EmersonBraun/python-excercices">
                       Contribute to the Project
                     </Link>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className={styles.moreResources}>
+          <div className="container">
+            <div className="row">
+              <div className="col col--8 col--offset-2">
+                <h2 className="text--center" style={{marginBottom: '1.5rem'}}>More Resources</h2>
+                <EbookCta />
+                <div className={styles.cardsRow}>
+                  <div className={styles.cardCol}>
+                    <JsCourseCard />
+                  </div>
+                  <div className={styles.cardCol}>
+                    <AwsCheatsheetCard />
                   </div>
                 </div>
               </div>

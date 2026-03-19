@@ -3,6 +3,9 @@
 /.venv
 /venv
 
+# Environment variables
+.env
+
 # Docusaurus
 .docusaurus/
 build/
