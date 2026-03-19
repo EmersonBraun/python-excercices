@@ -75,7 +75,7 @@ export default function Home(): ReactElement {
                   <div className={styles.buttons} style={{marginBottom: '4rem'}}>
                     <Link
                       className="button button--secondary button--lg"
-                      href="https://github.com/EmersonBraun/python-excercices">
+                      href="https://github.com/EmersonBraun/python-from-zero-to-hero">
                       Contribute to the Project
                     </Link>
                   </div>

@@ -11,10 +11,10 @@ const config: Config = {
   },
 
   url: 'https://emersonbraun.github.io',
-  baseUrl: '/python-excercices/',
+  baseUrl: '/python-from-zero-to-hero/',
 
   organizationName: 'EmersonBraun',
-  projectName: 'python-excercices',
+  projectName: 'python-from-zero-to-hero',
 
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -35,7 +35,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/EmersonBraun/python-excercices/edit/feat/curriculum-exercises/',
+          editUrl: 'https://github.com/EmersonBraun/python-from-zero-to-hero/edit/feat/curriculum-exercises/',
         },
         blog: false,
         theme: {
@@ -60,7 +60,7 @@ const config: Config = {
       logo: {alt: 'Python From Zero to Hero Logo', src: 'img/logo.svg'},
       items: [
         {type: 'docSidebar', sidebarId: 'courseSidebar', position: 'left', label: 'Course'},
-        {href: 'https://github.com/EmersonBraun/python-excercices', label: 'GitHub', position: 'right'},
+        {href: 'https://github.com/EmersonBraun/python-from-zero-to-hero', label: 'GitHub', position: 'right'},
         {type: 'localeDropdown', position: 'right'},
       ],
     },

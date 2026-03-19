@@ -3,7 +3,7 @@ import { defineConfig } from '@playwright/test';
 export default defineConfig({
   testDir: './tests/e2e',
   use: {
-    baseURL: 'http://localhost:3000/python-excercices/',
+    baseURL: 'http://localhost:3000/python-from-zero-to-hero/',
   },
   webServer: {
     command: 'npm run serve',
