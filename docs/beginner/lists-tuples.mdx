@@ -195,7 +195,7 @@ print(f"RGB=({red},{green},{blue}), brightness={brightness:.1f}")
     { input: "x", expected: "10", description: "x should be 10" },
     { input: "z", expected: "-3", description: "z should be -3" },
     { input: "red", expected: "255", description: "red should be 255" },
-    { input: "brightness", expected: "127.67", description: "brightness should be (255+128+0)/3 ≈ 127.67" },
+    { input: "brightness", expected: "127.66666666666667", description: "brightness should be (255+128+0)/3 = 127.66666666666667" },
   ]}
 />
 
@@ -255,7 +255,7 @@ print(f"Top 3: {top3}")
     { input: "sorted_desc[0]", expected: "100", description: "Highest score is 100" },
     { input: "top3", expected: "[100, 95, 90]", description: "Top 3 scores" },
     { input: "average", expected: "79.0", description: "Mean of scores is 79.0" },
-    { input: "passing", expected: "[72, 95, 88, 77, 90, 83, 69, 100]", description: "Scores >= 70 in original order" },
+    { input: "passing", expected: "[72, 95, 88, 77, 90, 83, 100]", description: "Scores >= 70 in original order" },
   ]}
 />
 
