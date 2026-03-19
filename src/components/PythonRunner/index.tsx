@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback} from 'react';
+import React, {useState, useCallback} from 'react';
 import styles from './styles.module.css';
 
 interface TestCase {
@@ -64,7 +64,6 @@ export default function PythonRunner({
   const [isRunning, setIsRunning] = useState(false);
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [copied, setCopied] = useState(false);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const runCode = useCallback(async () => {
     setIsRunning(true);
@@ -77,48 +76,50 @@ export default function PythonRunner({
       const pyodide = await getPyodide();
       setIsLoading(false);
 
-      // Capture stdout and stderr
+      // Create an isolated namespace for this run so multiple PythonRunner
+      // instances on the same page don't share state.
+      const globals = pyodide.globals.get('dict')();
+
+      // Capture stdout and stderr within the isolated namespace
       pyodide.runPython(`
 import sys
 import io
 sys.stdout = io.StringIO()
 sys.stderr = io.StringIO()
-`);
+`, {globals});
 
-      // Run user code with a timeout
-      const runWithTimeout = async (): Promise<void> => {
-        return new Promise<void>((resolve, reject) => {
-          const timer = setTimeout(() => {
-            reject(new Error('Execution timed out (5 second limit). Possible infinite loop?'));
-          }, 5000);
-
-          try {
-            pyodide.runPython(code);
-            clearTimeout(timer);
-            resolve();
-          } catch (err) {
-            clearTimeout(timer);
-            reject(err);
-          }
-        });
+      // Run user code with a timeout using runPythonAsync + Promise.race.
+      // NOTE: runPythonAsync yields to the event loop for async Python code,
+      // making the timeout effective for await-based async code. For purely
+      // synchronous infinite loops (e.g. `while True: pass`), even this approach
+      // cannot interrupt execution — only a Web Worker can handle that (future improvement).
+      const runWithTimeout = async (pyodide: any, userCode: string, timeoutMs: number = 5000) => {
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Execution timed out (5s limit)')), timeoutMs)
+        );
+        return Promise.race([
+          pyodide.runPythonAsync(userCode, {globals}),
+          timeoutPromise,
+        ]);
       };
 
-      await runWithTimeout();
+      await runWithTimeout(pyodide, code);
 
-      const stdout = pyodide.runPython('sys.stdout.getvalue()');
-      const stderr = pyodide.runPython('sys.stderr.getvalue()');
+      const stdout = pyodide.runPython('sys.stdout.getvalue()', {globals});
+      const stderr = pyodide.runPython('sys.stderr.getvalue()', {globals});
 
       setOutput(stdout || '');
       if (stderr) {
         setError(stderr);
       }
 
-      // Run test cases if provided
+      // Run test cases if provided — evaluate in the same namespace
+      // so test expressions can reference user-defined functions/variables.
       if (testCases && testCases.length > 0) {
         const results: TestResult[] = [];
         for (const tc of testCases) {
           try {
-            const result = pyodide.runPython(`str(${tc.input})`);
+            const result = pyodide.runPython(`str(${tc.input})`, {globals});
             const actual = String(result);
             results.push({
               passed: actual === tc.expected,
@@ -229,7 +230,6 @@ sys.stderr = io.StringIO()
 
       {/* Editor */}
       <textarea
-        ref={textareaRef}
         className={styles.editor}
         value={code}
         onChange={(e) => setCode(e.target.value)}
