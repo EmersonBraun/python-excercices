@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Binary Search Visualization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; }
+  #main {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  #array-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 4px;
+    min-height: 60px;
+  }
+  #pointer-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    justify-content: center;
+    margin-bottom: 10px;
+    min-height: 20px;
+  }
+  .cell {
+    width: 40px;
+    height: 52px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: background 0.3s, transform 0.2s;
+  }
+  .val { font-size: 1rem; }
+  .idx { font-size: 0.62rem; color: #94a3b8; margin-top: 2px; }
+  .cell.normal { background: #334155; color: #e2e8f0; }
+  .cell.range  { background: #1d4ed8; color: #fff; }
+  .cell.mid    { background: #fbbf24; color: #0f172a; transform: scale(1.08); }
+  .cell.found  { background: #22c55e; color: #fff; transform: scale(1.12); }
+  .cell.elim   { background: #1e293b; color: #475569; }
+  .ptr-slot { width: 40px; height: 18px; text-align: center; font-size: 0.72rem; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: center; margin-bottom: 10px;
+  }
+  input[type=number] {
+    width: 72px; padding: 7px 8px; border-radius: 6px;
+    border: 1px solid #334155; background: #0f172a;
+    color: #f1f5f9; font-size: 0.85rem;
+  }
+  button {
+    padding: 7px 16px; border: none; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  #btn-search { background: #22c55e; color: #fff; }
+  #btn-step   { background: #3b82f6; color: #fff; }
+  #btn-reset  { background: #475569; color: #fff; }
+  #btn-rand   { background: #8b5cf6; color: #fff; }
+  .stats { display: flex; gap: 24px; font-size: 0.82rem; color: #94a3b8; justify-content: center; }
+  .stats strong { color: #f1f5f9; }
+  #msg { margin-top: 8px; text-align: center; font-size: 0.85rem; min-height: 20px; color: #94a3b8; }
+  .legend {
+    display: flex; gap: 12px; font-size: 0.74rem; color: #94a3b8;
+    flex-wrap: wrap; justify-content: center; margin-top: 8px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+<h1>Binary Search Visualization</h1>
+<div id="main">
+  <div id="pointer-row"></div>
+  <div id="array-wrap"></div>
+  <div class="controls">
+    <label style="font-size:0.82rem;color:#94a3b8">Target:</label>
+    <input type="number" id="target" value="42" min="1" max="99">
+    <button id="btn-search">Search</button>
+    <button id="btn-step">Step</button>
+    <button id="btn-reset">Reset</button>
+    <button id="btn-rand">New Array</button>
+  </div>
+  <div class="stats">
+    <div>Steps: <strong id="steps">0</strong></div>
+    <div>Left: <strong id="sl">-</strong></div>
+    <div>Mid: <strong id="sm">-</strong></div>
+    <div>Right: <strong id="sr">-</strong></div>
+  </div>
+  <div id="msg">Enter a target value and click Search or Step.</div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#1d4ed8"></div> Search range</div>
+  <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Mid pointer</div>
+  <div class="legend-item"><div class="dot" style="background:#22c55e"></div> Found</div>
+  <div class="legend-item"><div class="dot" style="background:#334155"></div> Eliminated</div>
+</div>
+
+<script>
+const N = 16;
+let arr = [], left = 0, right = 0, mid = 0, target = 0;
+let steps = 0, state = 'idle';
+
+function sortedRandom() {
+  const s = new Set();
+  while (s.size < N) s.add(Math.floor(Math.random() * 90) + 5);
+  return Array.from(s).sort((a, b) => a - b);
+}
+
+function init() {
+  arr = sortedRandom();
+  left = 0; right = arr.length - 1; steps = 0;
+  mid = Math.floor((left + right) / 2);
+  state = 'idle';
+  render();
+  document.getElementById('msg').textContent = 'Enter a target value and click Search or Step.';
+}
+
+function makeCellClass(i) {
+  if (state === 'done_found' && i === mid) return 'found';
+  if (state === 'done_notfound') return 'elim';
+  if (state === 'searching' || state === 'stepped') {
+    if (i < left || i > right) return 'elim';
+    if (i === mid) return 'mid';
+    return 'range';
+  }
+  return 'normal';
+}
+
+function render() {
+  const wrap = document.getElementById('array-wrap');
+  const prow = document.getElementById('pointer-row');
+  wrap.replaceChildren();
+  prow.replaceChildren();
+
+  arr.forEach((v, i) => {
+    const cell = document.createElement('div');
+    cell.className = 'cell ' + makeCellClass(i);
+
+    const valEl = document.createElement('span');
+    valEl.className = 'val';
+    valEl.textContent = v;
+
+    const idxEl = document.createElement('span');
+    idxEl.className = 'idx';
+    idxEl.textContent = i;
+
+    cell.appendChild(valEl);
+    cell.appendChild(idxEl);
+    wrap.appendChild(cell);
+
+    const ps = document.createElement('div');
+    ps.className = 'ptr-slot';
+    if (state !== 'idle' && state !== 'done_found' && state !== 'done_notfound') {
+      const ptrs = [];
+      if (i === left) ptrs.push('L');
+      if (i === mid) ptrs.push('M');
+      if (i === right) ptrs.push('R');
+      if (ptrs.length) {
+        ps.textContent = ptrs.join('/');
+        if (i === mid) ps.style.color = '#fbbf24';
+        else ps.style.color = '#60a5fa';
+      }
+    }
+    prow.appendChild(ps);
+  });
+
+  document.getElementById('steps').textContent = steps;
+  const active = state !== 'idle';
+  document.getElementById('sl').textContent = active ? left : '-';
+  document.getElementById('sm').textContent = active ? mid : '-';
+  document.getElementById('sr').textContent = active ? right : '-';
+}
+
+function startSearch() {
+  target = parseInt(document.getElementById('target').value);
+  if (isNaN(target)) return;
+  left = 0; right = arr.length - 1; steps = 0;
+  mid = Math.floor((left + right) / 2);
+  state = 'searching';
+  render();
+  document.getElementById('msg').textContent = 'Searching for ' + target + '...';
+}
+
+function doStep() {
+  if (state === 'idle') { startSearch(); return; }
+  if (state === 'done_found' || state === 'done_notfound') { init(); return; }
+
+  if (left > right) {
+    state = 'done_notfound';
+    document.getElementById('msg').textContent = target + ' not found after ' + steps + ' steps.';
+    render(); return;
+  }
+
+  mid = Math.floor((left + right) / 2);
+  steps++;
+  state = 'stepped';
+
+  if (arr[mid] === target) {
+    state = 'done_found';
+    document.getElementById('msg').textContent = 'Found ' + target + ' at index ' + mid + ' in ' + steps + ' step' + (steps > 1 ? 's' : '') + '!';
+  } else if (arr[mid] < target) {
+    document.getElementById('msg').textContent = 'arr[' + mid + ']=' + arr[mid] + ' < ' + target + ' - search right half';
+    left = mid + 1;
+    state = 'searching';
+  } else {
+    document.getElementById('msg').textContent = 'arr[' + mid + ']=' + arr[mid] + ' > ' + target + ' - search left half';
+    right = mid - 1;
+    state = 'searching';
+  }
+
+  if (state === 'searching' && left > right) {
+    state = 'done_notfound';
+    document.getElementById('msg').textContent = target + ' not found after ' + steps + ' steps.';
+  }
+  render();
+}
+
+document.getElementById('btn-search').addEventListener('click', startSearch);
+document.getElementById('btn-step').addEventListener('click', doStep);
+document.getElementById('btn-reset').addEventListener('click', () => {
+  left = 0; right = arr.length - 1; steps = 0;
+  mid = Math.floor((left + right) / 2);
+  state = 'idle';
+  render();
+  document.getElementById('msg').textContent = 'Enter a target value and click Search or Step.';
+});
+document.getElementById('btn-rand').addEventListener('click', init);
+
+init();
+</script>
+</body>
+</html>

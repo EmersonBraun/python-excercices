@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linked List Visualization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; }
+  #canvas-wrap {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  canvas { display: block; width: 100%; height: 180px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: center; max-width: 760px; width: 100%; margin-bottom: 10px;
+  }
+  input[type=text], input[type=number] {
+    padding: 7px 8px; border-radius: 6px; border: 1px solid #334155;
+    background: #0f172a; color: #f1f5f9; font-size: 0.82rem;
+  }
+  input[type=text]   { width: 70px; }
+  input[type=number] { width: 56px; }
+  button {
+    padding: 7px 13px; border: none; border-radius: 6px;
+    font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  button:hover { opacity: 0.85; }
+  .btn-head   { background: #22c55e; color: #fff; }
+  .btn-tail   { background: #3b82f6; color: #fff; }
+  .btn-pos    { background: #a78bfa; color: #fff; }
+  .btn-del    { background: #ef4444; color: #fff; }
+  .btn-search { background: #f59e0b; color: #0f172a; }
+  .btn-reset  { background: #475569; color: #fff; }
+  .stats { display: flex; gap: 20px; font-size: 0.82rem; color: #94a3b8; }
+  .stats strong { color: #f1f5f9; }
+  #msg {
+    max-width: 760px; width: 100%;
+    text-align: center; font-size: 0.82rem; color: #94a3b8; min-height: 18px; margin-top: 6px;
+  }
+  .legend {
+    display: flex; gap: 14px; font-size: 0.74rem; color: #94a3b8;
+    flex-wrap: wrap; justify-content: center; margin-top: 6px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+<h1>Linked List Visualization</h1>
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
+<div class="controls">
+  <input type="text" id="val-input" placeholder="value" maxlength="4" value="42">
+  <button class="btn-head"   id="btn-head">Insert Head</button>
+  <button class="btn-tail"   id="btn-tail">Insert Tail</button>
+  <span style="font-size:0.8rem;color:#94a3b8">pos:</span>
+  <input type="number" id="pos-input" value="1" min="0" max="20">
+  <button class="btn-pos"    id="btn-pos">Insert At</button>
+  <button class="btn-del"    id="btn-del">Delete Head</button>
+  <button class="btn-search" id="btn-search">Search</button>
+  <button class="btn-reset"  id="btn-reset">Reset</button>
+</div>
+<div class="stats">
+  <div>Length: <strong id="length">0</strong></div>
+  <div>Head: <strong id="head-val">-</strong></div>
+  <div>Tail: <strong id="tail-val">-</strong></div>
+</div>
+<div id="msg">Use the buttons to manipulate the linked list.</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#4f83cc"></div> Normal</div>
+  <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Traversing</div>
+  <div class="legend-item"><div class="dot" style="background:#22c55e"></div> Found</div>
+  <div class="legend-item"><div class="dot" style="background:#ef4444"></div> Deleting</div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let list = [];
+let highlighted = [];
+let highlightColors = {};
+const MAX = 10;
+
+const NODE_W = 54, NODE_H = 40, NODE_R = 6;
+const ARROW_W = 24;
+const GAP = NODE_W + ARROW_W;
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  draw();
+}
+
+function draw() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  if (!list.length) {
+    ctx.fillStyle = '#475569';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Empty list — insert some nodes!', w / 2, h / 2);
+    return;
+  }
+
+  const totalW = list.length * NODE_W + (list.length - 1) * ARROW_W;
+  let startX = Math.max(10, (w - totalW) / 2);
+  const y = h / 2;
+
+  list.forEach((val, i) => {
+    const x = startX + i * GAP;
+    const color = highlightColors[i] || '#4f83cc';
+
+    // Node box
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.roundRect(x, y - NODE_H / 2, NODE_W, NODE_H, NODE_R);
+    ctx.fill();
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Value text
+    ctx.fillStyle = color === '#fbbf24' ? '#0f172a' : '#fff';
+    ctx.font = 'bold 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(val), x + NODE_W / 2, y);
+
+    // Index label
+    ctx.fillStyle = '#64748b';
+    ctx.font = '10px sans-serif';
+    ctx.fillText('[' + i + ']', x + NODE_W / 2, y + NODE_H / 2 + 12);
+
+    // Arrow to next
+    if (i < list.length - 1) {
+      const ax = x + NODE_W;
+      ctx.beginPath();
+      ctx.moveTo(ax + 2, y);
+      ctx.lineTo(ax + ARROW_W - 4, y);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      // Arrowhead
+      ctx.beginPath();
+      ctx.moveTo(ax + ARROW_W - 4, y - 5);
+      ctx.lineTo(ax + ARROW_W - 4, y + 5);
+      ctx.lineTo(ax + ARROW_W, y);
+      ctx.closePath();
+      ctx.fillStyle = '#475569';
+      ctx.fill();
+    } else {
+      // NULL label
+      const nx = x + NODE_W + 6;
+      ctx.fillStyle = '#334155';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('null', nx, y + 4);
+    }
+
+    // HEAD / TAIL labels
+    if (i === 0) {
+      ctx.fillStyle = '#22c55e';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('HEAD', x + NODE_W / 2, y - NODE_H / 2 - 8);
+    }
+    if (i === list.length - 1) {
+      ctx.fillStyle = '#3b82f6';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('TAIL', x + NODE_W / 2, y + NODE_H / 2 + 24);
+    }
+  });
+}
+
+function updateStats() {
+  document.getElementById('length').textContent = list.length;
+  document.getElementById('head-val').textContent = list.length ? list[0] : '-';
+  document.getElementById('tail-val').textContent = list.length ? list[list.length - 1] : '-';
+}
+
+function setMsg(m) { document.getElementById('msg').textContent = m; }
+
+async function flashHighlight(indices, colors, duration) {
+  indices.forEach((i, k) => { highlightColors[i] = colors[k] || '#fbbf24'; });
+  draw();
+  await new Promise(r => setTimeout(r, duration));
+  highlightColors = {};
+  draw();
+}
+
+document.getElementById('btn-head').addEventListener('click', async () => {
+  if (list.length >= MAX) { setMsg('Max ' + MAX + ' nodes reached.'); return; }
+  const val = document.getElementById('val-input').value.trim() || '?';
+  list.unshift(val);
+  updateStats(); draw();
+  await flashHighlight([0], ['#22c55e'], 500);
+  setMsg('Inserted "' + val + '" at the head (O(1)).');
+});
+
+document.getElementById('btn-tail').addEventListener('click', async () => {
+  if (list.length >= MAX) { setMsg('Max ' + MAX + ' nodes reached.'); return; }
+  const val = document.getElementById('val-input').value.trim() || '?';
+  list.push(val);
+  updateStats(); draw();
+  await flashHighlight([list.length - 1], ['#22c55e'], 500);
+  setMsg('Inserted "' + val + '" at the tail (O(n) traversal).');
+});
+
+document.getElementById('btn-pos').addEventListener('click', async () => {
+  if (list.length >= MAX) { setMsg('Max ' + MAX + ' nodes reached.'); return; }
+  const val = document.getElementById('val-input').value.trim() || '?';
+  let pos = parseInt(document.getElementById('pos-input').value);
+  pos = Math.max(0, Math.min(pos, list.length));
+
+  // Animate traversal
+  for (let i = 0; i < pos; i++) {
+    await flashHighlight([i], ['#fbbf24'], 180);
+  }
+
+  list.splice(pos, 0, val);
+  updateStats(); draw();
+  await flashHighlight([pos], ['#22c55e'], 600);
+  setMsg('Inserted "' + val + '" at position ' + pos + '.');
+});
+
+document.getElementById('btn-del').addEventListener('click', async () => {
+  if (!list.length) { setMsg('List is empty.'); return; }
+  const val = list[0];
+  await flashHighlight([0], ['#ef4444'], 400);
+  list.shift();
+  updateStats(); draw();
+  setMsg('Deleted head node "' + val + '".');
+});
+
+document.getElementById('btn-search').addEventListener('click', async () => {
+  const target = document.getElementById('val-input').value.trim();
+  if (!target) { setMsg('Enter a value to search.'); return; }
+  let found = false;
+  for (let i = 0; i < list.length; i++) {
+    await flashHighlight([i], ['#fbbf24'], 250);
+    if (String(list[i]) === target) {
+      await flashHighlight([i], ['#22c55e'], 800);
+      setMsg('Found "' + target + '" at index ' + i + '!');
+      found = true;
+      break;
+    }
+  }
+  if (!found) setMsg('"' + target + '" not found in list.');
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  list = ['10', '20', '30', '40'];
+  highlightColors = {};
+  updateStats(); draw();
+  setMsg('List reset to [10, 20, 30, 40].');
+});
+
+window.addEventListener('resize', resize);
+resize();
+list = ['10', '20', '30', '40'];
+updateStats();
+draw();
+</script>
+</body>
+</html>
