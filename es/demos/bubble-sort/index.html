@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bubble Sort Visualization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; letter-spacing: 0.02em; }
+  #canvas-wrap {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  canvas { display: block; width: 100%; height: 220px; }
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+    max-width: 760px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  button {
+    padding: 7px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #btn-play  { background: #22c55e; color: #fff; }
+  #btn-step  { background: #3b82f6; color: #fff; }
+  #btn-reset { background: #475569; color: #fff; }
+  #btn-rand  { background: #8b5cf6; color: #fff; }
+  .speed-wrap { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #94a3b8; }
+  input[type=range] { width: 90px; accent-color: #3b82f6; }
+  .stats {
+    display: flex;
+    gap: 24px;
+    font-size: 0.82rem;
+    color: #94a3b8;
+  }
+  .stat span { font-weight: 700; color: #f1f5f9; }
+  .legend {
+    display: flex;
+    gap: 14px;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 6px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+</style>
+</head>
+<body>
+<h1>Bubble Sort Visualization</h1>
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
+<div class="controls">
+  <button id="btn-play">▶ Play</button>
+  <button id="btn-step">⏭ Step</button>
+  <button id="btn-reset">↺ Reset</button>
+  <button id="btn-rand">⚄ Randomize</button>
+  <div class="speed-wrap">
+    <span>Speed:</span>
+    <input type="range" id="speed" min="1" max="10" value="5">
+    <span id="speed-label">5</span>
+  </div>
+</div>
+<div class="stats">
+  <div>Comparisons: <span id="cmp">0</span></div>
+  <div>Swaps: <span id="swp">0</span></div>
+  <div>Pass: <span id="pass">0</span></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#4f83cc"></div> Unsorted</div>
+  <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Comparing</div>
+  <div class="legend-item"><div class="dot" style="background:#ef4444"></div> Swapping</div>
+  <div class="legend-item"><div class="dot" style="background:#22c55e"></div> Sorted</div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const N = 20;
+
+let arr = [], comparing = [], swapping = [], sorted = [];
+let i = 0, j = 0, pass = 0;
+let comparisons = 0, swaps = 0;
+let playing = false, done = false;
+let animId = null, lastTime = 0;
+
+function randomArray() {
+  return Array.from({length: N}, () => Math.floor(Math.random() * 90) + 10);
+}
+
+function reset(newArr) {
+  arr = newArr || randomArray();
+  i = 0; j = 0; pass = 0;
+  comparisons = 0; swaps = 0;
+  comparing = []; swapping = []; sorted = [];
+  done = false;
+  updateStats();
+  draw();
+}
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  draw();
+}
+
+function draw() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const bw = Math.floor((w - (N - 1) * 2) / N);
+  const maxVal = Math.max(...arr);
+
+  arr.forEach((v, idx) => {
+    const bh = Math.floor((v / maxVal) * (h - 24));
+    const x = idx * (bw + 2);
+    const y = h - bh - 20;
+
+    let color = '#4f83cc';
+    if (sorted.includes(idx)) color = '#22c55e';
+    if (swapping.includes(idx)) color = '#ef4444';
+    if (comparing.includes(idx) && !swapping.includes(idx)) color = '#fbbf24';
+
+    const grad = ctx.createLinearGradient(x, y, x, y + bh);
+    grad.addColorStop(0, color);
+    grad.addColorStop(1, color + 'aa');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.roundRect(x, y, bw, bh, [3, 3, 0, 0]);
+    ctx.fill();
+
+    if (bw > 18) {
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = `${Math.min(10, bw - 4)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(v, x + bw / 2, h - 4);
+    }
+  });
+}
+
+function step() {
+  if (done) return;
+  const limit = arr.length - 1 - pass;
+  if (limit < 0) { finalize(); return; }
+
+  comparing = [j, j + 1];
+  swapping = [];
+  comparisons++;
+
+  if (arr[j] > arr[j + 1]) {
+    [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+    swapping = [j, j + 1];
+    swaps++;
+  }
+
+  j++;
+  if (j >= limit) {
+    sorted.unshift(limit);
+    j = 0;
+    pass++;
+    if (pass >= arr.length - 1) finalize();
+  }
+  updateStats();
+  draw();
+}
+
+function finalize() {
+  done = true;
+  sorted = arr.map((_, i) => i);
+  comparing = []; swapping = [];
+  playing = false;
+  document.getElementById('btn-play').textContent = '▶ Play';
+  draw();
+}
+
+function updateStats() {
+  document.getElementById('cmp').textContent = comparisons;
+  document.getElementById('swp').textContent = swaps;
+  document.getElementById('pass').textContent = pass;
+}
+
+function getDelay() {
+  const s = parseInt(document.getElementById('speed').value);
+  return Math.round(1000 / (s * 3));
+}
+
+function tick(ts) {
+  if (!playing) return;
+  if (ts - lastTime >= getDelay()) {
+    lastTime = ts;
+    step();
+    if (done) return;
+  }
+  animId = requestAnimationFrame(tick);
+}
+
+document.getElementById('btn-play').addEventListener('click', () => {
+  if (done) { reset(); }
+  playing = !playing;
+  document.getElementById('btn-play').textContent = playing ? '⏸ Pause' : '▶ Play';
+  if (playing) { lastTime = 0; animId = requestAnimationFrame(tick); }
+});
+
+document.getElementById('btn-step').addEventListener('click', () => {
+  playing = false;
+  document.getElementById('btn-play').textContent = '▶ Play';
+  step();
+});
+
+document.getElementById('btn-reset').addEventListener('click', () => {
+  playing = false;
+  document.getElementById('btn-play').textContent = '▶ Play';
+  cancelAnimationFrame(animId);
+  reset(arr.slice());
+});
+
+document.getElementById('btn-rand').addEventListener('click', () => {
+  playing = false;
+  document.getElementById('btn-play').textContent = '▶ Play';
+  cancelAnimationFrame(animId);
+  reset();
+});
+
+document.getElementById('speed').addEventListener('input', function() {
+  document.getElementById('speed-label').textContent = this.value;
+});
+
+window.addEventListener('resize', resize);
+resize();
+reset();
+</script>
+</body>
+</html>

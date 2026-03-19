@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fibonacci Recursion Tree</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; }
+  #canvas-wrap {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  canvas { display: block; width: 100%; height: 300px; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    justify-content: center; max-width: 760px; width: 100%; margin-bottom: 10px;
+  }
+  label { font-size: 0.82rem; color: #94a3b8; }
+  input[type=number] {
+    width: 60px; padding: 7px 8px; border-radius: 6px;
+    border: 1px solid #334155; background: #0f172a;
+    color: #f1f5f9; font-size: 0.85rem;
+  }
+  button {
+    padding: 7px 16px; border: none; border-radius: 6px;
+    font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s;
+  }
+  button:hover { opacity: 0.85; }
+  #btn-animate { background: #22c55e; color: #fff; }
+  #btn-step    { background: #3b82f6; color: #fff; }
+  #btn-reset   { background: #475569; color: #fff; }
+  .speed-wrap { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: #94a3b8; }
+  input[type=range] { width: 80px; accent-color: #3b82f6; }
+  .stats { display: flex; gap: 24px; font-size: 0.82rem; color: #94a3b8; }
+  .stats strong { color: #f1f5f9; }
+  .legend {
+    display: flex; gap: 14px; font-size: 0.74rem; color: #94a3b8;
+    flex-wrap: wrap; justify-content: center; margin-top: 6px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body>
+<h1>Fibonacci Recursion Tree</h1>
+<div id="canvas-wrap"><canvas id="c"></canvas></div>
+<div class="controls">
+  <label>n =</label>
+  <input type="number" id="n-input" value="5" min="1" max="8">
+  <button id="btn-animate">Animate</button>
+  <button id="btn-step">Step</button>
+  <button id="btn-reset">Reset</button>
+  <div class="speed-wrap">
+    <span>Speed:</span>
+    <input type="range" id="speed" min="1" max="10" value="5">
+    <span id="speed-label">5</span>
+  </div>
+</div>
+<div class="stats">
+  <div>Calls: <strong id="calls">0</strong></div>
+  <div>Returned: <strong id="returned">0</strong></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#4f83cc"></div> Pending</div>
+  <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Computing</div>
+  <div class="legend-item"><div class="dot" style="background:#22c55e"></div> Returned</div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+let nodes = [], edges = [], stepQueue = [], playing = false, animId = null, lastTime = 0;
+let callCount = 0, returnCount = 0;
+
+const NODE_R = 18;
+const COLORS = { pending: '#4f83cc', computing: '#fbbf24', returned: '#22c55e', base: '#a78bfa' };
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  draw();
+}
+
+function buildTree(n, depth, x, y, spread, parentId) {
+  const id = nodes.length;
+  nodes.push({ id, n, x, y, state: 'pending', value: null, depth });
+  if (parentId !== null) edges.push({ from: parentId, to: id });
+
+  if (n <= 1) {
+    stepQueue.push({ type: 'compute', id });
+    stepQueue.push({ type: 'return', id, val: n });
+  } else {
+    stepQueue.push({ type: 'compute', id });
+    const childSpread = spread * 0.55;
+    buildTree(n - 1, depth + 1, x - spread, y + 60, childSpread, id);
+    buildTree(n - 2, depth + 1, x + spread, y + 60, childSpread, id);
+    stepQueue.push({ type: 'return', id, val: -1 });
+  }
+  return id;
+}
+
+function init() {
+  const nVal = Math.min(8, Math.max(1, parseInt(document.getElementById('n-input').value) || 5));
+  nodes = []; edges = []; stepQueue = [];
+  callCount = 0; returnCount = 0;
+  playing = false;
+  cancelAnimationFrame(animId);
+  document.getElementById('btn-animate').textContent = 'Animate';
+
+  const cw = canvas.offsetWidth || 700;
+  buildTree(nVal, 0, cw / 2, NODE_R + 16, cw * 0.28, null);
+  updateStats();
+  draw();
+}
+
+function draw() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw edges
+  edges.forEach(e => {
+    const from = nodes[e.from], to = nodes[e.to];
+    ctx.beginPath();
+    ctx.moveTo(from.x, from.y);
+    ctx.lineTo(to.x, to.y);
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  });
+
+  // Draw nodes
+  nodes.forEach(nd => {
+    const color = nd.state === 'returned' ? COLORS.returned
+                : nd.state === 'computing' ? COLORS.computing
+                : COLORS.pending;
+    ctx.beginPath();
+    ctx.arc(nd.x, nd.y, NODE_R, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    ctx.fillStyle = nd.state === 'computing' ? '#0f172a' : '#fff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const label = nd.state === 'returned' && nd.value !== null ? String(nd.value) : 'f(' + nd.n + ')';
+    ctx.fillText(label, nd.x, nd.y);
+  });
+}
+
+function doStep() {
+  if (!stepQueue.length) return;
+  const evt = stepQueue.shift();
+  const nd = nodes[evt.id];
+
+  if (evt.type === 'compute') {
+    nd.state = 'computing';
+    callCount++;
+  } else if (evt.type === 'return') {
+    nd.state = 'returned';
+    returnCount++;
+    if (evt.val >= 0) {
+      nd.value = evt.val;
+    } else {
+      // calculate from children
+      const childEdges = edges.filter(e => e.from === nd.id);
+      const childVals = childEdges.map(e => nodes[e.to].value);
+      nd.value = childVals.every(v => v !== null) ? childVals.reduce((a, b) => a + b, 0) : null;
+    }
+  }
+  updateStats();
+  draw();
+}
+
+function updateStats() {
+  document.getElementById('calls').textContent = callCount;
+  document.getElementById('returned').textContent = returnCount;
+}
+
+function getDelay() {
+  const s = parseInt(document.getElementById('speed').value);
+  return Math.round(800 / s);
+}
+
+function tick(ts) {
+  if (!playing) return;
+  if (ts - lastTime >= getDelay()) {
+    lastTime = ts;
+    if (!stepQueue.length) {
+      playing = false;
+      document.getElementById('btn-animate').textContent = 'Animate';
+      return;
+    }
+    doStep();
+  }
+  animId = requestAnimationFrame(tick);
+}
+
+document.getElementById('btn-animate').addEventListener('click', () => {
+  if (!stepQueue.length) init();
+  playing = !playing;
+  document.getElementById('btn-animate').textContent = playing ? 'Pause' : 'Resume';
+  if (playing) { lastTime = 0; animId = requestAnimationFrame(tick); }
+});
+
+document.getElementById('btn-step').addEventListener('click', () => {
+  playing = false;
+  document.getElementById('btn-animate').textContent = 'Animate';
+  cancelAnimationFrame(animId);
+  if (!stepQueue.length) init();
+  doStep();
+});
+
+document.getElementById('btn-reset').addEventListener('click', init);
+
+document.getElementById('speed').addEventListener('input', function() {
+  document.getElementById('speed-label').textContent = this.value;
+});
+
+window.addEventListener('resize', () => {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  init();
+});
+
+resize();
+init();
+</script>
+</body>
+</html>

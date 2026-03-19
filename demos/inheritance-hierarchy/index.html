@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inheritance Hierarchy</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; }
+  #canvas-wrap {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  canvas { display: block; width: 100%; height: 280px; cursor: pointer; }
+  #info-panel {
+    width: 100%;
+    max-width: 760px;
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 0.82rem;
+    min-height: 90px;
+  }
+  #info-panel h2 { font-size: 0.95rem; margin-bottom: 8px; color: #f1f5f9; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+  .info-col h3 { font-size: 0.78rem; color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+  .info-col ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
+  .info-col li { font-size: 0.78rem; color: #cbd5e1; }
+  .info-col li.inherited { color: #64748b; font-style: italic; }
+  #mro-row { margin-top: 10px; font-size: 0.78rem; color: #94a3b8; }
+  #mro-row strong { color: #f1f5f9; }
+  .legend {
+    display: flex; gap: 14px; font-size: 0.74rem; color: #94a3b8;
+    flex-wrap: wrap; justify-content: center; margin-top: 8px;
+  }
+  .legend-item { display: flex; align-items: center; gap: 4px; }
+  .dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  #hint { text-align: center; font-size: 0.78rem; color: #475569; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Class Inheritance Hierarchy</h1>
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+  <div id="hint">Click a class box to inspect its attributes and MRO</div>
+</div>
+<div id="info-panel">
+  <h2 id="info-title">Select a class</h2>
+  <div class="info-grid">
+    <div class="info-col">
+      <h3>Attributes</h3>
+      <ul id="attr-list"></ul>
+    </div>
+    <div class="info-col">
+      <h3>Own Methods</h3>
+      <ul id="method-list"></ul>
+    </div>
+    <div class="info-col">
+      <h3>Inherited</h3>
+      <ul id="inh-list"></ul>
+    </div>
+  </div>
+  <div id="mro-row"></div>
+</div>
+<div class="legend">
+  <div class="legend-item"><div class="dot" style="background:#1d4ed8"></div> Base class</div>
+  <div class="legend-item"><div class="dot" style="background:#16a34a"></div> Subclass</div>
+  <div class="legend-item"><div class="dot" style="background:#fbbf24"></div> Selected</div>
+</div>
+
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+const classes = [
+  {
+    id: 'Animal',
+    label: 'Animal',
+    attrs: ['name: str', 'age: int'],
+    methods: ['__init__()', 'speak()', '__str__()'],
+    parents: [],
+    tier: 0, col: 1
+  },
+  {
+    id: 'Dog',
+    label: 'Dog',
+    attrs: ['breed: str'],
+    methods: ['__init__()', 'speak()', 'fetch()'],
+    parents: ['Animal'],
+    tier: 1, col: 0
+  },
+  {
+    id: 'Cat',
+    label: 'Cat',
+    attrs: ['indoor: bool'],
+    methods: ['__init__()', 'speak()', 'purr()'],
+    parents: ['Animal'],
+    tier: 1, col: 2
+  },
+  {
+    id: 'GuideDog',
+    label: 'GuideDog',
+    attrs: ['owner: str', 'certified: bool'],
+    methods: ['__init__()', 'guide()', 'speak()'],
+    parents: ['Dog'],
+    tier: 2, col: 0
+  },
+  {
+    id: 'HouseCat',
+    label: 'HouseCat',
+    attrs: ['litter_box: bool'],
+    methods: ['__init__()', 'meow()'],
+    parents: ['Cat'],
+    tier: 2, col: 2
+  },
+];
+
+const classMap = {};
+classes.forEach(c => { classMap[c.id] = c; });
+
+function getMRO(id) {
+  const cls = classMap[id];
+  const visited = [];
+  function visit(c) {
+    if (visited.includes(c.id)) return;
+    visited.push(c.id);
+    c.parents.forEach(p => visit(classMap[p]));
+  }
+  visit(cls);
+  visited.push('object');
+  return visited;
+}
+
+function getInherited(id) {
+  const mro = getMRO(id).slice(1).filter(x => x !== 'object');
+  const own = classMap[id].methods;
+  const inh = [];
+  mro.forEach(pid => {
+    if (!classMap[pid]) return;
+    classMap[pid].methods.forEach(m => {
+      if (!own.includes(m) && !inh.includes(m)) inh.push(m + ' [' + pid + ']');
+    });
+  });
+  return inh;
+}
+
+let selectedId = null;
+const BOX_W = 130, BOX_H = 70, BOX_R = 8;
+
+function layout() {
+  const cw = canvas.offsetWidth || 700;
+  const cols = 3;
+  const colW = cw / cols;
+  const tiers = 3;
+  const tierH = (canvas.offsetHeight || 280) / tiers;
+
+  classes.forEach(c => {
+    c.x = colW * c.col + colW / 2;
+    c.y = tierH * c.tier + tierH / 2;
+  });
+}
+
+function draw() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+
+  // Draw inheritance arrows
+  classes.forEach(c => {
+    c.parents.forEach(pid => {
+      const parent = classMap[pid];
+      if (!parent) return;
+      const fromX = c.x, fromY = c.y - BOX_H / 2;
+      const toX = parent.x, toY = parent.y + BOX_H / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([]);
+      ctx.stroke();
+
+      // Open arrowhead (triangle) pointing to parent
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      const size = 10;
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - size * Math.cos(angle - 0.4), toY - size * Math.sin(angle - 0.4));
+      ctx.lineTo(toX - size * Math.cos(angle + 0.4), toY - size * Math.sin(angle + 0.4));
+      ctx.closePath();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+  });
+
+  // Draw boxes
+  classes.forEach(c => {
+    const x = c.x - BOX_W / 2, y = c.y - BOX_H / 2;
+    const isBase = c.parents.length === 0;
+    const isSelected = c.id === selectedId;
+
+    let bg = isBase ? '#1d4ed8' : '#16a34a';
+    let border = isBase ? '#3b82f6' : '#22c55e';
+    if (isSelected) { bg = '#b45309'; border = '#fbbf24'; }
+
+    // Header
+    ctx.fillStyle = bg;
+    ctx.beginPath();
+    ctx.roundRect(x, y, BOX_W, 28, [BOX_R, BOX_R, 0, 0]);
+    ctx.fill();
+
+    // Body
+    ctx.fillStyle = '#1e293b';
+    ctx.beginPath();
+    ctx.roundRect(x, y + 28, BOX_W, BOX_H - 28, [0, 0, BOX_R, BOX_R]);
+    ctx.fill();
+
+    // Border
+    ctx.strokeStyle = border;
+    ctx.lineWidth = isSelected ? 2.5 : 1.5;
+    ctx.beginPath();
+    ctx.roundRect(x, y, BOX_W, BOX_H, BOX_R);
+    ctx.stroke();
+
+    // Class name
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(c.label, c.x, y + 14);
+
+    // Attrs preview
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '9px sans-serif';
+    ctx.fillText(c.attrs.slice(0, 2).join(', ') || '', c.x, y + 38);
+
+    // Methods preview
+    ctx.fillStyle = '#64748b';
+    ctx.fillText(c.methods.slice(0, 2).join(', ') || '', c.x, y + 52);
+  });
+}
+
+function hitTest(mx, my) {
+  for (const c of classes) {
+    if (mx >= c.x - BOX_W / 2 && mx <= c.x + BOX_W / 2 &&
+        my >= c.y - BOX_H / 2 && my <= c.y + BOX_H / 2) {
+      return c;
+    }
+  }
+  return null;
+}
+
+function showInfo(c) {
+  document.getElementById('info-title').textContent = c.label + ' class';
+
+  const attrList = document.getElementById('attr-list');
+  attrList.replaceChildren();
+  c.attrs.forEach(a => {
+    const li = document.createElement('li');
+    li.textContent = a;
+    attrList.appendChild(li);
+  });
+
+  const methodList = document.getElementById('method-list');
+  methodList.replaceChildren();
+  c.methods.forEach(m => {
+    const li = document.createElement('li');
+    li.textContent = m;
+    methodList.appendChild(li);
+  });
+
+  const inhList = document.getElementById('inh-list');
+  inhList.replaceChildren();
+  const inh = getInherited(c.id);
+  if (inh.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = '(none)';
+    li.className = 'inherited';
+    inhList.appendChild(li);
+  } else {
+    inh.forEach(m => {
+      const li = document.createElement('li');
+      li.textContent = m;
+      li.className = 'inherited';
+      inhList.appendChild(li);
+    });
+  }
+
+  const mro = getMRO(c.id);
+  const mroEl = document.getElementById('mro-row');
+  mroEl.textContent = '';
+  const label = document.createElement('strong');
+  label.textContent = 'MRO: ';
+  mroEl.appendChild(label);
+  mroEl.appendChild(document.createTextNode(mro.join(' → ')));
+}
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const my = (e.clientY - rect.top) * scaleY;
+  const hit = hitTest(mx, my);
+  if (hit) {
+    selectedId = hit.id;
+    draw();
+    showInfo(hit);
+    document.getElementById('hint').textContent = 'Showing: ' + hit.label;
+  }
+});
+
+function resize() {
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  layout();
+  draw();
+}
+
+window.addEventListener('resize', resize);
+resize();
+</script>
+</body>
+</html>
