@@ -1,0 +1,367 @@
+---
+title: Lists & Tuples
+sidebar_label: Lists & Tuples
+sidebar_position: 5
+---
+
+# Lists & Tuples
+
+Lists and tuples are Python's two primary **sequence** types. Lists are mutable and packed with useful methods; tuples are immutable and ideal for fixed collections of values. In this module you will learn to create, index, slice, and transform both types, and discover the elegant power of **list comprehensions**.
+
+## Learning Objectives
+
+- Create and modify lists using indexing, slicing, and common methods
+- Understand the difference between mutable lists and immutable tuples
+- Use list comprehensions to build lists concisely
+- Unpack sequences into variables
+- Apply sorting, searching, and aggregation functions to sequences
+
+---
+
+## Theory
+
+### List Basics
+
+A list is an ordered, mutable collection of items enclosed in square brackets:
+
+```python
+fruits = ["apple", "banana", "cherry"]
+mixed  = [1, "hello", 3.14, True]  # can hold any types
+empty  = []
+```
+
+Access elements by zero-based index. Negative indices count from the end:
+
+```python
+fruits[0]   # "apple"
+fruits[-1]  # "cherry"
+fruits[1:3] # ["banana", "cherry"]  (slice)
+```
+
+### List Methods
+
+```python
+lst = [3, 1, 4, 1, 5]
+
+lst.append(9)         # [3, 1, 4, 1, 5, 9]   — add to end
+lst.insert(0, 0)      # [0, 3, 1, 4, 1, 5, 9] — insert at index
+lst.remove(1)         # removes first occurrence of 1
+lst.pop()             # removes and returns last element
+lst.pop(0)            # removes and returns element at index 0
+lst.sort()            # sorts in-place (ascending)
+lst.sort(reverse=True)# sorts descending
+lst.reverse()         # reverses in-place
+lst.count(1)          # how many times 1 appears
+lst.index(4)          # index of first occurrence of 4
+lst.extend([7, 8])    # append all items from another iterable
+```
+
+:::tip
+`sort()` modifies the list in-place and returns `None`. If you need a new sorted list, use the built-in `sorted(lst)` instead.
+:::
+
+See [list methods](https://docs.python.org/3/tutorial/datastructures.html#more-on-lists) in the docs.
+
+### List Comprehensions
+
+A list comprehension is a compact way to build a list from an iterable:
+
+```python
+# Basic form: [expression for item in iterable]
+squares = [x ** 2 for x in range(1, 6)]   # [1, 4, 9, 16, 25]
+
+# With a filter condition:
+evens = [x for x in range(10) if x % 2 == 0]  # [0, 2, 4, 6, 8]
+
+# Nested:
+pairs = [(x, y) for x in range(3) for y in range(3)]
+```
+
+:::note
+List comprehensions are often faster and more readable than equivalent `for` loops with `.append()`. Use them for simple transformations; stick to regular loops for complex logic.
+:::
+
+### Tuples
+
+A tuple is an ordered, **immutable** sequence enclosed in parentheses:
+
+```python
+point = (3, 4)
+rgb   = (255, 128, 0)
+single = (42,)   # note the trailing comma — required for single-element tuples!
+```
+
+Because tuples cannot be changed after creation, they are:
+- Safe to use as dictionary keys
+- Slightly faster and more memory-efficient than lists
+- A good choice for fixed collections (coordinates, records, etc.)
+
+Tuples support the same indexing and slicing as lists.
+
+### Unpacking
+
+Both lists and tuples can be **unpacked** into individual variables:
+
+```python
+x, y = (3, 4)
+first, *rest = [1, 2, 3, 4, 5]   # first=1, rest=[2,3,4,5]
+a, b, c = "abc"                   # works on any iterable
+```
+
+See [Tuples and Sequences](https://docs.python.org/3/tutorial/datastructures.html#tuples-and-sequences) for more.
+
+---
+
+## Visual Demo
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-excercices/demos/binary-search/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Binary Search Visualization"
+  />
+</div>
+
+---
+
+## Exercises
+
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
+### Exercise 1 — List Indexing
+
+<PythonRunner
+  title="List Indexing"
+  difficulty="easy"
+  initialCode={`# Access specific elements of the list using indexing and slicing.
+planets = ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune"]
+
+# 1. first  — the first planet
+# 2. last   — the last planet
+# 3. rocky  — the first four planets (slice)
+
+first = None
+last = None
+rocky = None
+
+print(first, last, rocky)
+`}
+  testCases={[
+    { input: "first", expected: "Mercury", description: "First planet is Mercury" },
+    { input: "last", expected: "Neptune", description: "Last planet is Neptune" },
+    { input: "rocky", expected: "['Mercury', 'Venus', 'Earth', 'Mars']", description: "First four planets" },
+  ]}
+/>
+
+### Exercise 2 — List Methods
+
+<PythonRunner
+  title="List Methods"
+  difficulty="easy"
+  initialCode={`# Build a shopping list using list methods.
+shopping = ["milk", "bread", "eggs"]
+
+# 1. Append "butter" to the list
+# 2. Insert "cheese" at index 1
+# 3. Remove "bread" from the list
+# 4. Sort the list alphabetically
+# Store the final list (after all operations) as shopping.
+
+# Your code here
+
+print(shopping)
+`}
+  testCases={[
+    { input: "'butter' in shopping", expected: "True", description: "'butter' should be in the list" },
+    { input: "'cheese' in shopping", expected: "True", description: "'cheese' should be in the list" },
+    { input: "'bread' in shopping", expected: "False", description: "'bread' should be removed" },
+    { input: "shopping", expected: "['butter', 'cheese', 'eggs', 'milk']", description: "List should be sorted alphabetically" },
+  ]}
+/>
+
+### Exercise 3 — Tuple Unpacking
+
+<PythonRunner
+  title="Tuple Unpacking"
+  difficulty="easy"
+  initialCode={`# Unpack these tuples into individual variables.
+coordinates = (10, 25, -3)
+color = (255, 128, 0)
+
+# 1. Unpack coordinates into x, y, z
+# 2. Unpack color into red, green, blue
+# 3. Compute brightness = (red + green + blue) / 3
+
+x = y = z = None
+red = green = blue = None
+brightness = None
+
+# Your code here
+
+print(f"x={x}, y={y}, z={z}")
+print(f"RGB=({red},{green},{blue}), brightness={brightness:.1f}")
+`}
+  testCases={[
+    { input: "x", expected: "10", description: "x should be 10" },
+    { input: "z", expected: "-3", description: "z should be -3" },
+    { input: "red", expected: "255", description: "red should be 255" },
+    { input: "brightness", expected: "127.66666666666667", description: "brightness should be (255+128+0)/3 = 127.66666666666667" },
+  ]}
+/>
+
+### Exercise 4 — List Comprehensions
+
+<PythonRunner
+  title="List Comprehensions"
+  difficulty="medium"
+  initialCode={`# Use list comprehensions to build these lists.
+numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+
+# 1. squares — squares of all numbers
+# 2. even_squares — squares of only the even numbers
+# 3. words — for each number, the string "item_{number}" (e.g. "item_1")
+
+squares = None
+even_squares = None
+words = None
+
+print(squares)
+print(even_squares)
+print(words)
+`}
+  testCases={[
+    { input: "squares", expected: "[1, 4, 9, 16, 25, 36, 49, 64, 81, 100]", description: "squares of 1-10" },
+    { input: "even_squares", expected: "[4, 16, 36, 64, 100]", description: "squares of even numbers only" },
+    { input: "words[0]", expected: "item_1", description: "first word should be 'item_1'" },
+    { input: "words[-1]", expected: "item_10", description: "last word should be 'item_10'" },
+  ]}
+/>
+
+### Exercise 5 — Sorting and Aggregation
+
+<PythonRunner
+  title="Sorting and Aggregation"
+  difficulty="medium"
+  initialCode={`# Analyse a list of exam scores.
+scores = [72, 95, 61, 88, 77, 55, 90, 83, 69, 100]
+
+# 1. sorted_asc  — scores sorted ascending (do NOT modify original)
+# 2. sorted_desc — scores sorted descending (do NOT modify original)
+# 3. top3        — the three highest scores (as a list)
+# 4. average     — the mean score (float)
+# 5. passing     — list of scores >= 70
+
+sorted_asc = None
+sorted_desc = None
+top3 = None
+average = None
+passing = None
+
+print(f"Average: {average:.1f}")
+print(f"Top 3: {top3}")
+`}
+  testCases={[
+    { input: "sorted_asc[0]", expected: "55", description: "Lowest score is 55" },
+    { input: "sorted_desc[0]", expected: "100", description: "Highest score is 100" },
+    { input: "top3", expected: "[100, 95, 90]", description: "Top 3 scores" },
+    { input: "average", expected: "79.0", description: "Mean of scores is 79.0" },
+    { input: "passing", expected: "[72, 95, 88, 77, 90, 83, 100]", description: "Scores >= 70 in original order" },
+  ]}
+/>
+
+### Exercise 6 — Extended Unpacking
+
+<PythonRunner
+  title="Extended Unpacking"
+  difficulty="medium"
+  initialCode={`# Use extended unpacking (*) to split sequences.
+data = [10, 20, 30, 40, 50, 60]
+
+# 1. Unpack: head = first element, *tail = rest
+# 2. Unpack: *body = all except last, tail_item = last element
+# 3. Unpack: first_item, *middle, last_item = all three parts
+
+head = None
+tail = None
+body = None
+tail_item = None
+first_item = None
+middle = None
+last_item = None
+
+# Your code here
+
+print(head, tail)
+print(body, tail_item)
+print(first_item, middle, last_item)
+`}
+  testCases={[
+    { input: "head", expected: "10", description: "head should be 10" },
+    { input: "tail", expected: "[20, 30, 40, 50, 60]", description: "tail should be the remaining elements" },
+    { input: "tail_item", expected: "60", description: "tail_item should be 60" },
+    { input: "middle", expected: "[20, 30, 40, 50]", description: "middle should be the inner elements" },
+  ]}
+/>
+
+### Exercise 7 — Matrix Transpose
+
+<PythonRunner
+  title="Matrix Transpose"
+  difficulty="hard"
+  initialCode={`# Transpose a 3x3 matrix using a list comprehension.
+# The transpose flips rows and columns:
+# matrix[i][j] becomes transposed[j][i]
+
+matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9],
+]
+
+# Build transposed as a list of lists using a list comprehension.
+# Hint: transposed[i][j] = matrix[j][i]
+
+transposed = None  # replace with your comprehension
+
+for row in transposed:
+    print(row)
+`}
+  testCases={[
+    { input: "transposed[0]", expected: "[1, 4, 7]", description: "First row of transpose is first column of original" },
+    { input: "transposed[1]", expected: "[2, 5, 8]", description: "Second row of transpose" },
+    { input: "transposed[2]", expected: "[3, 6, 9]", description: "Third row of transpose" },
+  ]}
+/>
+
+### Exercise 8 — flatten (Bonus)
+
+:::caution Preview Challenge
+This exercise previews concepts from the Dictionaries & Sets module. It is included as a **bonus challenge**.
+:::
+
+<PythonRunner
+  title="flatten"
+  difficulty="hard"
+  initialCode={`# Write flatten(nested) that takes a list of lists and returns
+# a single flat list containing all the elements.
+#
+# Example:
+#   flatten([[1, 2], [3, 4], [5]]) -> [1, 2, 3, 4, 5]
+#   flatten([[], [1], [2, 3]])     -> [1, 2, 3]
+
+def flatten(nested):
+    pass
+
+print(flatten([[1, 2], [3, 4], [5]]))
+print(flatten([[], [1], [2, 3]]))
+`}
+  testCases={[
+    { input: "flatten([[1, 2], [3, 4], [5]])", expected: "[1, 2, 3, 4, 5]", description: "Basic flatten" },
+    { input: "flatten([[], [1], [2, 3]])", expected: "[1, 2, 3]", description: "flatten with empty sub-list" },
+    { input: "flatten([])", expected: "[]", description: "flatten of empty list" },
+  ]}
+/>

@@ -1,0 +1,360 @@
+---
+title: Variables & Types
+sidebar_label: Variables & Types
+sidebar_position: 2
+---
+
+# Variables & Types
+
+In this module you will learn how Python stores data using **variables**, explore the four fundamental **data types**, convert between them, and format output with **f-strings**. By the end you will be comfortable declaring variables, reasoning about their types, and manipulating strings and numbers in Python.
+
+## Learning Objectives
+
+- Understand Python variables and assignment
+- Know the basic data types (`int`, `float`, `str`, `bool`)
+- Use type conversion functions
+- Work with f-strings for output
+
+---
+
+## Theory
+
+### Variables
+
+A variable in Python is a name that refers to a value stored in memory. You create a variable with a simple **assignment statement** using the `=` operator:
+
+```python
+age = 25
+greeting = "Hello"
+pi = 3.14159
+```
+
+Unlike many other languages, Python does not require you to declare a type — the type is inferred automatically from the value you assign. You can even reassign a variable to a completely different type later, although doing so is generally discouraged for readability.
+
+Variable names must start with a letter or underscore, can contain letters, digits, and underscores, and are **case-sensitive** (`age` and `Age` are different variables). The Python community follows the `snake_case` convention for variable and function names (e.g. `my_variable`, `total_count`).
+
+:::tip
+Choose descriptive names. `x = 30` tells the reader nothing; `temperature_celsius = 30` is immediately clear.
+:::
+
+For more details see the [Python Tutorial — An Informal Introduction](https://docs.python.org/3/tutorial/introduction.html).
+
+### Data Types
+
+Python has four fundamental built-in types you will use constantly:
+
+| Type    | Example          | Description                        |
+|---------|------------------|------------------------------------|
+| `int`   | `42`, `-7`, `0`  | Whole numbers (unlimited precision)|
+| `float` | `3.14`, `-0.5`   | Decimal (floating-point) numbers   |
+| `str`   | `"hello"`, `'hi'`| Text enclosed in quotes            |
+| `bool`  | `True`, `False`  | Logical truth values               |
+
+You can check any value's type with the built-in `type()` function:
+
+```python
+type(42)        # <class 'int'>
+type(3.14)      # <class 'float'>
+type("hello")   # <class 'str'>
+type(True)      # <class 'bool'>
+```
+
+:::note
+In Python, `bool` is a subclass of `int`. `True` equals `1` and `False` equals `0`, so you can use booleans in arithmetic expressions — but that does not mean you should.
+:::
+
+See the [Built-in Types](https://docs.python.org/3/library/stdtypes.html) documentation for a comprehensive reference.
+
+### Type Conversion
+
+Python provides built-in functions to convert between types:
+
+```python
+int("42")       # 42       — string to int
+float("3.14")   # 3.14     — string to float
+str(100)        # "100"    — int to string
+bool(0)         # False    — int to bool (0 is falsy)
+bool("")        # False    — empty string is falsy
+bool("hello")   # True     — non-empty string is truthy
+int(3.9)        # 3        — truncates, does NOT round
+```
+
+:::tip
+`int()` truncates toward zero. If you need rounding, use `round()` instead: `round(3.9)` returns `4`.
+:::
+
+See [Built-in Functions](https://docs.python.org/3/library/functions.html) for the full list.
+
+### String Formatting
+
+Python offers several ways to build strings from variables. The modern, preferred approach is **f-strings** (formatted string literals), available since Python 3.6:
+
+```python
+name = "Alice"
+age = 30
+print(f"My name is {name} and I am {age} years old.")
+```
+
+You can put any valid expression inside the braces:
+
+```python
+print(f"Next year I will be {age + 1}.")
+print(f"Pi to 2 decimals: {3.14159:.2f}")
+```
+
+Older alternatives include the `.format()` method and `%` formatting:
+
+```python
+# .format()
+"Hello, {}!".format(name)
+
+# % formatting (legacy)
+"Hello, %s!" % name
+```
+
+:::note
+Stick with f-strings for new code. They are faster, more readable, and less error-prone than the alternatives.
+:::
+
+See [Format String Syntax](https://docs.python.org/3/library/string.html#formatstrings) for advanced formatting options.
+
+---
+
+## Exercises
+
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
+### Exercise 1 — Hello Variables
+
+<PythonRunner
+  title="Hello Variables"
+  difficulty="easy"
+  initialCode={`# Variables are already defined. Your task:
+# Print a message using an f-string that says "Welcome to Python 3.12"
+
+name = "Python"
+version = 3.12
+print(f"Welcome to {name} {version}")
+`}
+  testCases={[
+    { input: "name", expected: "Python", description: "name should be 'Python'" },
+    { input: "version", expected: "3.12", description: "version should be 3.12" },
+    { input: "'Welcome to' in sys.stdout.getvalue()", expected: "True", description: "Output should contain 'Welcome to'" },
+  ]}
+/>
+
+### Exercise 2 — Temperature Converter
+
+<PythonRunner
+  title="Temperature Converter"
+  difficulty="easy"
+  initialCode={`# Convert a temperature from Celsius to Fahrenheit.
+# Formula: F = C * 9/5 + 32
+#
+# 1. Create a variable celsius with the value 100
+# 2. Calculate fahrenheit using the formula
+# 3. Print the result using an f-string:
+#    "100°C is 212.0°F"
+
+celsius = 100
+# Your code here
+`}
+  testCases={[
+    { input: "celsius", expected: "100", description: "celsius should be 100" },
+    { input: "fahrenheit", expected: "212.0", description: "fahrenheit should be 212.0" },
+    { input: "'212' in sys.stdout.getvalue()", expected: "True", description: "Output should contain the converted temperature" },
+  ]}
+/>
+
+### Exercise 3 — Type Detective
+
+<PythonRunner
+  title="Type Detective"
+  difficulty="easy"
+  initialCode={`# Use the type() function to figure out the type of each value.
+# Assign the TYPE NAME as a string to each result variable.
+# Example: type_of_a = "int"
+#
+# Inspect these values:
+a = 42
+b = 3.14
+c = "hello"
+d = True
+e = None
+
+type_of_a = ""  # fill in: "int", "float", "str", "bool", or "NoneType"
+type_of_b = ""
+type_of_c = ""
+type_of_d = ""
+type_of_e = ""
+`}
+  testCases={[
+    { input: "type_of_a", expected: "int", description: "42 is an int" },
+    { input: "type_of_b", expected: "float", description: "3.14 is a float" },
+    { input: "type_of_c", expected: "str", description: "'hello' is a str" },
+    { input: "type_of_d", expected: "bool", description: "True is a bool" },
+    { input: "type_of_e", expected: "NoneType", description: "None is NoneType" },
+  ]}
+/>
+
+### Exercise 4 — String Formatting
+
+<PythonRunner
+  title="String Formatting"
+  difficulty="easy"
+  initialCode={`# Practice different string formatting techniques.
+#
+# Given these variables:
+product = "Widget"
+price = 19.99
+quantity = 3
+#
+# 1. Create total_cost = price * quantity
+# 2. Create a string called summary using an f-string:
+#    "3x Widget = $59.97"
+#    (format the dollar amount to exactly 2 decimal places)
+
+# Your code here
+`}
+  testCases={[
+    { input: "total_cost", expected: "59.97", description: "total_cost should be 59.97" },
+    { input: "summary", expected: "3x Widget = $59.97", description: "summary should be '3x Widget = $59.97'" },
+  ]}
+/>
+
+### Exercise 5 — Type Conversion
+
+<PythonRunner
+  title="Type Conversion"
+  difficulty="medium"
+  initialCode={`# Practice converting between Python types.
+#
+# 1. Given the string "42", convert it to an int and store in num_int
+# 2. Given the string "42", convert it to a float and store in num_float
+# 3. Given the float 3.14, convert it to an int and store in truncated
+#    (note: int() truncates, it does NOT round)
+# 4. Given the int 0, convert it to a bool and store in zero_bool
+# 5. Given the int 42, convert it to a bool and store in nonzero_bool
+
+text = "42"
+pi = 3.14
+
+num_int = None      # convert text to int
+num_float = None    # convert text to float
+truncated = None    # convert pi to int
+zero_bool = None    # convert 0 to bool
+nonzero_bool = None # convert 42 to bool
+`}
+  testCases={[
+    { input: "num_int", expected: "42", description: "int('42') should be 42" },
+    { input: "num_float", expected: "42.0", description: "float('42') should be 42.0" },
+    { input: "truncated", expected: "3", description: "int(3.14) should be 3 (truncated)" },
+    { input: "zero_bool", expected: "False", description: "bool(0) should be False" },
+    { input: "nonzero_bool", expected: "True", description: "bool(42) should be True" },
+  ]}
+/>
+
+### Exercise 6 — String Explorer
+
+<PythonRunner
+  title="String Explorer"
+  difficulty="medium"
+  initialCode={`# Use string methods to transform text.
+#
+# Given the string:
+text = "hello, world"
+#
+# 1. Create upper_text — text converted to ALL CAPS
+# 2. Create lower_text — text converted to all lowercase
+# 3. Create title_text — text converted to Title Case
+# 4. Create replaced_text — text with "world" replaced by "python"
+# 5. Create text_length — the length of the original text (an int)
+
+upper_text = None
+lower_text = None
+title_text = None
+replaced_text = None
+text_length = None
+`}
+  testCases={[
+    { input: "upper_text", expected: "HELLO, WORLD", description: ".upper() should return 'HELLO, WORLD'" },
+    { input: "lower_text", expected: "hello, world", description: ".lower() should return 'hello, world'" },
+    { input: "title_text", expected: "Hello, World", description: ".title() should return 'Hello, World'" },
+    { input: "replaced_text", expected: "hello, python", description: ".replace('world', 'python') should return 'hello, python'" },
+    { input: "text_length", expected: "12", description: "len('hello, world') should be 12" },
+  ]}
+/>
+
+### Exercise 7 — Receipt Formatter
+
+<PythonRunner
+  title="Receipt Formatter"
+  difficulty="medium"
+  initialCode={`# Create a formatted receipt using f-strings with alignment.
+#
+# Given these items and prices:
+item1 = "Apples"
+price1 = 3.50
+item2 = "Bread"
+price2 = 2.75
+item3 = "Milk"
+price3 = 4.20
+#
+# 1. Create line1, line2, line3 where each line has:
+#    - item name left-aligned in a 12-character field
+#    - price right-aligned in a 6-character field with 2 decimal places
+#    Example: "Apples      $  3.50"
+#    Hint: use f"{item1:<12}$\\{price1:>6.2f}"
+#
+# 2. Create total_line formatted the same way with label "Total"
+#    and the sum of all prices.
+
+line1 = ""
+line2 = ""
+line3 = ""
+total_line = ""
+`}
+  testCases={[
+    { input: "line1", expected: "Apples      $  3.50", description: "line1 should be 'Apples      $  3.50'" },
+    { input: "line2", expected: "Bread       $  2.75", description: "line2 should be 'Bread       $  2.75'" },
+    { input: "line3", expected: "Milk        $  4.20", description: "line3 should be 'Milk        $  4.20'" },
+    { input: "total_line", expected: "Total       $ 10.45", description: "total_line should be 'Total       $ 10.45'" },
+  ]}
+/>
+
+### Exercise 8 — Vowel Counter (Bonus)
+
+:::caution Preview Challenge
+This exercise uses concepts (loops, conditionals, dictionaries) from upcoming modules. It is included as a **bonus challenge** for those who want to explore ahead.
+:::
+
+<PythonRunner
+  title="Vowel Counter"
+  difficulty="hard"
+  initialCode={`# Write a function analyze_string(s) that returns a dictionary with:
+#   - "vowels": count of vowels (a, e, i, o, u — case-insensitive)
+#   - "consonants": count of consonants (letters that are not vowels)
+#   - "digits": count of digit characters
+#   - "other": count of everything else (spaces, punctuation, etc.)
+#
+# Example:
+#   analyze_string("Hello World! 123")
+#   -> {"vowels": 3, "consonants": 7, "digits": 3, "other": 3}
+
+def analyze_string(s):
+    pass
+
+# Try it:
+result = analyze_string("Hello World! 123")
+print(result)
+`}
+  testCases={[
+    { input: "analyze_string('Hello World! 123')['vowels']", expected: "3", description: "'Hello World! 123' has 3 vowels" },
+    { input: "analyze_string('Hello World! 123')['consonants']", expected: "7", description: "'Hello World! 123' has 7 consonants" },
+    { input: "analyze_string('Hello World! 123')['digits']", expected: "3", description: "'Hello World! 123' has 3 digits" },
+    { input: "analyze_string('Hello World! 123')['other']", expected: "3", description: "'Hello World! 123' has 3 other characters" },
+    { input: "analyze_string('')['vowels']", expected: "0", description: "Empty string has 0 vowels" },
+  ]}
+/>

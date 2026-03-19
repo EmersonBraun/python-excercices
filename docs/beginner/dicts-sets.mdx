@@ -1,0 +1,409 @@
+---
+title: Dictionaries, Sets & Comprehensions
+sidebar_label: Dicts, Sets & Comprehensions
+sidebar_position: 7
+---
+
+# Dictionaries, Sets & Comprehensions
+
+Dictionaries and sets are Python's primary **unordered** collection types. Dictionaries map **keys** to **values** and are everywhere in real-world Python code. Sets store **unique** elements and support fast membership testing and mathematical set operations. In this module you will also master **dict and set comprehensions** for concise, expressive code.
+
+## Learning Objectives
+
+- Create, access, and modify dictionaries
+- Use common dict methods (`.get()`, `.keys()`, `.values()`, `.items()`, `.update()`, `.pop()`)
+- Create sets and perform union, intersection, and difference operations
+- Write dict and set comprehensions
+- Work with nested dictionaries
+
+---
+
+## Theory
+
+### Dictionary Basics
+
+A dictionary is an ordered (Python 3.7+) mapping of unique **keys** to **values**, enclosed in curly braces:
+
+```python
+person = {"name": "Alice", "age": 30, "city": "NYC"}
+empty  = {}
+```
+
+Access values by key. Missing keys raise `KeyError` — use `.get()` to provide a default:
+
+```python
+person["name"]              # "Alice"
+person.get("email")         # None    (key missing, no error)
+person.get("email", "N/A")  # "N/A"  (explicit default)
+```
+
+Add, update, and delete entries:
+
+```python
+person["email"] = "alice@example.com"   # add
+person["age"] = 31                       # update
+del person["city"]                       # delete
+popped = person.pop("email")             # remove and return
+```
+
+### Dictionary Methods
+
+```python
+d = {"a": 1, "b": 2, "c": 3}
+
+d.keys()           # dict_keys(["a", "b", "c"])
+d.values()         # dict_values([1, 2, 3])
+d.items()          # dict_items([("a", 1), ("b", 2), ("c", 3)])
+
+d.update({"d": 4, "a": 10})  # merge another dict (overrides existing keys)
+d.setdefault("e", 0)          # insert key with default if not present
+
+# Iterate:
+for key, value in d.items():
+    print(f"{key} -> {value}")
+```
+
+See [Dictionaries](https://docs.python.org/3/tutorial/datastructures.html#dictionaries) in the docs.
+
+### Dict Comprehensions
+
+```python
+squares = {x: x**2 for x in range(1, 6)}
+# {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# Filter with a condition:
+even_squares = {x: x**2 for x in range(10) if x % 2 == 0}
+
+# Invert a dictionary:
+original = {"a": 1, "b": 2, "c": 3}
+inverted = {v: k for k, v in original.items()}
+# {1: "a", 2: "b", 3: "c"}
+```
+
+### Set Basics
+
+A set is an unordered collection of **unique** items, also enclosed in curly braces:
+
+```python
+fruits = {"apple", "banana", "cherry", "apple"}  # "apple" stored once
+empty_set = set()   # NOT {} — that creates an empty dict!
+```
+
+```python
+fruits.add("mango")         # add one element
+fruits.remove("banana")     # remove (raises KeyError if missing)
+fruits.discard("banana")    # remove (no error if missing)
+"cherry" in fruits          # True — O(1) membership test
+```
+
+:::tip
+Use a set instead of a list whenever you need fast membership testing (`in`) or need to guarantee uniqueness.
+:::
+
+### Set Operations
+
+```python
+a = {1, 2, 3, 4}
+b = {3, 4, 5, 6}
+
+a | b   # union           {1, 2, 3, 4, 5, 6}
+a & b   # intersection    {3, 4}
+a - b   # difference      {1, 2}  (in a but not b)
+a ^ b   # symmetric diff  {1, 2, 5, 6}  (in one but not both)
+a <= b  # subset check
+```
+
+See [Sets](https://docs.python.org/3/tutorial/datastructures.html#sets) in the docs.
+
+### Set Comprehensions
+
+```python
+unique_lengths = {len(word) for word in ["cat", "dog", "elephant", "ox"]}
+# {2, 3, 8}
+```
+
+### Nested Dictionaries
+
+Dictionaries can hold other dictionaries as values:
+
+```python
+database = {
+    "alice": {"age": 30, "role": "admin"},
+    "bob":   {"age": 25, "role": "user"},
+}
+database["alice"]["role"]   # "admin"
+```
+
+---
+
+## Visual Demo
+
+<div style={{width: '100%', maxWidth: '800px', margin: '0 auto'}}>
+  <iframe
+    src="/python-excercices/demos/stack-queue/"
+    width="100%"
+    height="500"
+    style={{border: '1px solid #e2e8f0', borderRadius: '8px'}}
+    title="Stack and Queue Visualization"
+  />
+</div>
+
+---
+
+## Exercises
+
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
+### Exercise 1 — Dict Basics
+
+<PythonRunner
+  title="Dict Basics"
+  difficulty="easy"
+  initialCode={`# Work with a simple inventory dictionary.
+inventory = {"apples": 10, "bananas": 5, "oranges": 8}
+
+# 1. Add "grapes" with quantity 12
+# 2. Update "bananas" to 7
+# 3. Remove "oranges" (use pop(), store removed value in removed_qty)
+# 4. count — total number of keys remaining in inventory
+
+removed_qty = None
+count = None
+
+# Your code here
+
+print(inventory)
+print(f"Removed: {removed_qty}, Count: {count}")
+`}
+  testCases={[
+    { input: "inventory.get('grapes')", expected: "12", description: "'grapes' should be added with value 12" },
+    { input: "inventory.get('bananas')", expected: "7", description: "'bananas' should be updated to 7" },
+    { input: "'oranges' in inventory", expected: "False", description: "'oranges' should be removed" },
+    { input: "removed_qty", expected: "8", description: "removed_qty should be 8 (original value of oranges)" },
+    { input: "count", expected: "3", description: "inventory should have 3 remaining items" },
+  ]}
+/>
+
+### Exercise 2 — Dict Methods
+
+<PythonRunner
+  title="Dict Methods"
+  difficulty="easy"
+  initialCode={`# Explore dict methods.
+scores = {"Alice": 88, "Bob": 95, "Carol": 72}
+
+# 1. names  — a sorted list of all keys
+# 2. values_list — a sorted list of all values (ascending)
+# 3. top_scorer — the name (key) of the student with the highest score
+
+names = None
+values_list = None
+top_scorer = None
+
+# Your code here
+
+print(names)
+print(values_list)
+print(top_scorer)
+`}
+  testCases={[
+    { input: "names", expected: "['Alice', 'Bob', 'Carol']", description: "Sorted list of names" },
+    { input: "values_list", expected: "[72, 88, 95]", description: "Sorted list of scores" },
+    { input: "top_scorer", expected: "Bob", description: "Bob has the highest score (95)" },
+  ]}
+/>
+
+### Exercise 3 — Set Operations
+
+<PythonRunner
+  title="Set Operations"
+  difficulty="easy"
+  initialCode={`# Use set operations to answer questions about two groups.
+python_devs = {"Alice", "Bob", "Carol", "Dave"}
+js_devs     = {"Carol", "Dave", "Eve", "Frank"}
+
+# 1. both_langs — developers who know BOTH Python and JavaScript
+# 2. either_lang — developers who know EITHER language (or both)
+# 3. python_only — developers who know Python but NOT JavaScript
+# 4. unique_count — total number of unique developers across both groups
+
+both_langs = None
+either_lang = None
+python_only = None
+unique_count = None
+
+# Your code here
+
+print(both_langs)
+print(python_only)
+`}
+  testCases={[
+    { input: "both_langs", expected: "{'Carol', 'Dave'}", description: "Carol and Dave know both" },
+    { input: "len(either_lang)", expected: "6", description: "6 unique developers in total" },
+    { input: "python_only", expected: "{'Alice', 'Bob'}", description: "Alice and Bob know Python only" },
+    { input: "unique_count", expected: "6", description: "6 unique developers across both groups" },
+  ]}
+/>
+
+### Exercise 4 — Dict Comprehension
+
+<PythonRunner
+  title="Dict Comprehension"
+  difficulty="medium"
+  initialCode={`# Use dict comprehensions to build these dictionaries.
+words = ["apple", "banana", "cherry", "date", "elderberry"]
+
+# 1. word_lengths — maps each word to its character count
+# 2. long_words   — maps only words with length > 5 to their lengths
+# 3. upper_map    — maps each word to its uppercased version
+
+word_lengths = None
+long_words = None
+upper_map = None
+
+print(word_lengths)
+print(long_words)
+`}
+  testCases={[
+    { input: "word_lengths['apple']", expected: "5", description: "'apple' has 5 characters" },
+    { input: "word_lengths['banana']", expected: "6", description: "'banana' has 6 characters" },
+    { input: "list(long_words.keys())", expected: "['banana', 'cherry', 'elderberry']", description: "Only words longer than 5 characters" },
+    { input: "upper_map['cherry']", expected: "CHERRY", description: "upper_map should uppercase values" },
+  ]}
+/>
+
+### Exercise 5 — Word Frequency Counter
+
+<PythonRunner
+  title="Word Frequency Counter"
+  difficulty="medium"
+  initialCode={`# Count how many times each word appears in the sentence.
+# Treat the text as case-insensitive (convert to lowercase first).
+sentence = "to be or not to be that is the question to be"
+
+# freq — a dict mapping each unique word to its count
+# most_common — the word that appears the most times
+
+freq = {}
+most_common = None
+
+# Your code here
+
+print(freq)
+print(f"Most common: '{most_common}'")
+`}
+  testCases={[
+    { input: "freq['to']", expected: "3", description: "'to' appears 3 times" },
+    { input: "freq['be']", expected: "3", description: "'be' appears 3 times" },
+    { input: "freq['not']", expected: "1", description: "'not' appears 1 time" },
+    { input: "most_common", expected: "to", description: "'to' or 'be' — both appear 3 times (accept either)" },
+  ]}
+/>
+
+### Exercise 6 — Nested Dict
+
+<PythonRunner
+  title="Nested Dict"
+  difficulty="medium"
+  initialCode={`# Work with a nested dictionary representing a small class roster.
+roster = {
+    "Alice": {"grade": 10, "scores": [85, 92, 78]},
+    "Bob":   {"grade": 11, "scores": [70, 88, 95]},
+    "Carol": {"grade": 10, "scores": [90, 85, 88]},
+}
+
+# 1. alice_avg    — average score for Alice (float, rounded to 2 dp)
+# 2. grade10      — list of names of students in grade 10 (sorted)
+# 3. all_averages — dict mapping each name to their average score (2 dp)
+
+alice_avg = None
+grade10 = None
+all_averages = None
+
+# Your code here
+
+print(alice_avg)
+print(grade10)
+print(all_averages)
+`}
+  testCases={[
+    { input: "alice_avg", expected: "85.0", description: "Alice's average is (85+92+78)/3 = 85.0" },
+    { input: "grade10", expected: "['Alice', 'Carol']", description: "Grade 10 students sorted alphabetically" },
+    { input: "all_averages['Bob']", expected: "84.33", description: "Bob's average is (70+88+95)/3 ≈ 84.33" },
+  ]}
+/>
+
+### Exercise 7 — Set Comprehension & Deduplication
+
+<PythonRunner
+  title="Set Comprehension & Deduplication"
+  difficulty="hard"
+  initialCode={`# Use sets and comprehensions to process this list of user records.
+# Each record is a tuple: (username, email, age)
+users = [
+    ("alice",  "alice@example.com",  30),
+    ("bob",    "bob@example.com",    25),
+    ("alice",  "alice2@example.com", 30),   # duplicate username
+    ("carol",  "carol@example.com",  28),
+    ("bob",    "bob2@example.com",   25),   # duplicate username
+]
+
+# 1. unique_names  — a set of unique usernames
+# 2. adult_emails  — a set of emails belonging to users aged >= 28
+# 3. name_age_map  — a dict mapping username to age (last record wins for duplicates)
+# 4. dupe_names    — a set of usernames that appear MORE THAN ONCE
+
+unique_names = None
+adult_emails = None
+name_age_map = None
+dupe_names = None
+
+# Your code here
+
+print(unique_names)
+print(adult_emails)
+print(dupe_names)
+`}
+  testCases={[
+    { input: "unique_names", expected: "{'alice', 'bob', 'carol'}", description: "3 unique usernames" },
+    { input: "len(adult_emails)", expected: "3", description: "alice (30), alice2 (30), carol (28) — 3 emails for age >= 28" },
+    { input: "name_age_map['alice']", expected: "30", description: "alice is 30" },
+    { input: "dupe_names", expected: "{'alice', 'bob'}", description: "alice and bob appear more than once" },
+  ]}
+/>
+
+### Exercise 8 — group_by (Bonus)
+
+:::caution Preview Challenge
+This exercise combines dicts, loops, and list operations. It is included as a **bonus challenge**.
+:::
+
+<PythonRunner
+  title="group_by"
+  difficulty="hard"
+  initialCode={`# Write group_by(items, key_func) that groups items into a dict.
+# key_func is a function applied to each item to determine its group.
+# The dict maps each group key to a list of items in that group.
+#
+# Example:
+#   group_by([1,2,3,4,5,6], lambda x: x % 2)
+#   -> {1: [1, 3, 5], 0: [2, 4, 6]}
+#
+#   group_by(["cat","dog","ant","bee"], len)
+#   -> {3: ["cat","dog","ant","bee"]}
+
+def group_by(items, key_func):
+    pass
+
+print(group_by([1,2,3,4,5,6], lambda x: x % 2))
+print(group_by(["cat","dog","ant","bee"], len))
+`}
+  testCases={[
+    { input: "group_by([1,2,3,4,5,6], lambda x: x % 2)[1]", expected: "[1, 3, 5]", description: "Odd numbers group" },
+    { input: "group_by([1,2,3,4,5,6], lambda x: x % 2)[0]", expected: "[2, 4, 6]", description: "Even numbers group" },
+    { input: "group_by([], lambda x: x)", expected: "{}", description: "Empty list gives empty dict" },
+    { input: "group_by(['cat','dog','ox'], len)[3]", expected: "['cat', 'dog']", description: "Words of length 3" },
+  ]}
+/>
