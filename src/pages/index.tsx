@@ -1,4 +1,5 @@
 import Link from '@docusaurus/Link';
+import Translate, {translate} from '@docusaurus/Translate';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import clsx from 'clsx';
@@ -18,7 +19,7 @@ function HomepageHeader() {
         <p className="hero__subtitle">{siteConfig.tagline}</p>
         <div className={styles.buttons}>
           <Link className="button button--secondary button--lg" to="/docs/">
-            Start Learning
+            <Translate id="Start Learning">Start Learning</Translate>
           </Link>
         </div>
       </div>
@@ -31,7 +32,10 @@ export default function Home(): ReactElement {
   return (
     <Layout
       title={siteConfig.title}
-      description="Master Python from fundamentals to advanced concepts with interactive exercises">
+      description={translate({
+        id: 'homepage.metaDescription',
+        message: 'Master Python from fundamentals to advanced concepts with interactive exercises',
+      })}>
       <HomepageHeader />
       <main>
         <section className={styles.features}>
@@ -40,43 +44,53 @@ export default function Home(): ReactElement {
               <div className="col col--8 col--offset-2">
                 <div className="text--center padding-horiz--md">
                   <div className={styles.introSection}>
-                    <h2>What is this course?</h2>
+                    <h2>
+                      <Translate id="What is this course?">What is this course?</Translate>
+                    </h2>
                     <p>
-                      Python From Zero to Hero is a comprehensive, hands-on Python course that takes
-                      you from absolute beginner to advanced developer. Each module combines theory
-                      with interactive exercises you can run locally, plus real-world
-                      projects to build your portfolio.
+                      <Translate id="Python From Zero to Hero is a comprehensive, hands-on Python course that takes you from absolute beginner to advanced developer. Each module combines theory with interactive exercises you can run locally, plus real-world projects to build your portfolio.">
+                        Python From Zero to Hero is a comprehensive, hands-on Python course that takes
+                        you from absolute beginner to advanced developer. Each module combines theory
+                        with interactive exercises you can run locally, plus real-world
+                        projects to build your portfolio.
+                      </Translate>
                     </p>
                     <div className={styles.buttons}>
                       <Link
                         className="button button--primary button--lg"
                         to="/docs/">
-                        Explore the Course
+                        <Translate id="Explore the Course">Explore the Course</Translate>
                       </Link>
                     </div>
                   </div>
 
-                  <h2>What you will learn</h2>
+                  <h2>
+                    <Translate id="What you will learn">What you will learn</Translate>
+                  </h2>
                   <ul>
-                    <li>Python fundamentals from scratch</li>
-                    <li>Functions, modules, and OOP</li>
-                    <li>Decorators, generators, and async patterns</li>
-                    <li>Real-world projects and exercises</li>
-                    <li>Testing, debugging, and best practices</li>
-                    <li>Design patterns and performance optimization</li>
+                    <li><Translate id="Python fundamentals from scratch">Python fundamentals from scratch</Translate></li>
+                    <li><Translate id="Functions, modules, and OOP">Functions, modules, and OOP</Translate></li>
+                    <li><Translate id="Decorators, generators, and async patterns">Decorators, generators, and async patterns</Translate></li>
+                    <li><Translate id="Real-world projects and exercises">Real-world projects and exercises</Translate></li>
+                    <li><Translate id="Testing, debugging, and best practices">Testing, debugging, and best practices</Translate></li>
+                    <li><Translate id="Design patterns and performance optimization">Design patterns and performance optimization</Translate></li>
                   </ul>
 
-                  <h2>Help Improve This Course</h2>
+                  <h2>
+                    <Translate id="Help Improve This Course">Help Improve This Course</Translate>
+                  </h2>
                   <p>
-                    This project thrives on community contributions. Whether you are learning
-                    Python or are an experienced developer, your insights are valuable!
+                    <Translate id="This project thrives on community contributions. Whether you are learning Python or are an experienced developer, your insights are valuable!">
+                      This project thrives on community contributions. Whether you are learning
+                      Python or are an experienced developer, your insights are valuable!
+                    </Translate>
                   </p>
 
                   <div className={styles.buttons} style={{marginBottom: '4rem'}}>
                     <Link
                       className="button button--secondary button--lg"
                       href="https://github.com/EmersonBraun/python-from-zero-to-hero">
-                      Contribute to the Project
+                      <Translate id="Contribute to the Project">Contribute to the Project</Translate>
                     </Link>
                   </div>
                 </div>
@@ -89,7 +103,9 @@ export default function Home(): ReactElement {
           <div className="container">
             <div className="row">
               <div className="col col--8 col--offset-2">
-                <h2 className="text--center" style={{marginBottom: '1.5rem'}}>More Resources</h2>
+                <h2 className="text--center" style={{marginBottom: '1.5rem'}}>
+                  <Translate id="More Resources">More Resources</Translate>
+                </h2>
                 <EbookCta />
                 <div className={styles.cardsRow}>
                   <div className={styles.cardCol}>

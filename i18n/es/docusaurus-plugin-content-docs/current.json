@@ -11,20 +11,8 @@
     "message": "Avanzado",
     "description": "The label for category Advanced in sidebar courseSidebar"
   },
-  "sidebar.courseSidebar.category.Foundations": {
-    "message": "Fundamentos",
-    "description": "The label for category Foundations in sidebar courseSidebar"
-  },
-  "sidebar.courseSidebar.category.Functions": {
-    "message": "Funciones",
-    "description": "The label for category Functions in sidebar courseSidebar"
-  },
-  "sidebar.courseSidebar.category.Object-Oriented Programming": {
-    "message": "Programación Orientada a Objetos",
-    "description": "The label for category OOP in sidebar courseSidebar"
-  },
-  "sidebar.courseSidebar.category.Practical Projects": {
-    "message": "Proyectos Prácticos",
-    "description": "The label for category Practical Projects in sidebar courseSidebar"
+  "version.label": {
+    "message": "Siguiente",
+    "description": "The label for version current"
   }
 }

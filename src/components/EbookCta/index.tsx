@@ -1,4 +1,5 @@
 import Link from '@docusaurus/Link';
+import {translate} from '@docusaurus/Translate';
 import {type ReactElement} from 'react';
 
 import styles from './styles.module.css';
@@ -10,10 +11,15 @@ export default function EbookCta(): ReactElement {
         📘
       </div>
       <div className={styles.content}>
-        <h3 className={styles.title}>Cracking the Technical Interview</h3>
+        <h3 className={styles.title}>
+          {translate({id: 'ebookCta.title', message: 'Cracking the Technical Interview'})}
+        </h3>
         <p className={styles.description}>
-          Ace your next tech interview with proven strategies, real questions, and
-          expert tips. Get the ebook and land the job you deserve.
+          {translate({
+            id: 'ebookCta.description',
+            message:
+              'Ace your next tech interview with proven strategies, real questions, and expert tips. Get the ebook and land the job you deserve.',
+          })}
         </p>
       </div>
       <Link
@@ -21,7 +27,7 @@ export default function EbookCta(): ReactElement {
         href="https://ebook.emersonbraun.dev"
         target="_blank"
         rel="noopener noreferrer">
-        Get the Ebook
+        {translate({id: 'Get the Ebook', message: 'Get the Ebook'})}
       </Link>
     </div>
   );

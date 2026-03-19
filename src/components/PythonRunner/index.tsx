@@ -1,4 +1,5 @@
 import React, {useState, useCallback} from 'react';
+import {translate} from '@docusaurus/Translate';
 import styles from './styles.module.css';
 
 interface TestCase {
@@ -207,12 +208,26 @@ sys.stderr = io.StringIO()
   );
 
   const difficultyLabel = difficulty
-    ? {easy: 'Easy', medium: 'Medium', hard: 'Hard'}[difficulty]
+    ? {
+        easy: translate({id: 'pythonRunner.difficulty.easy', message: 'Easy'}),
+        medium: translate({id: 'pythonRunner.difficulty.medium', message: 'Medium'}),
+        hard: translate({id: 'pythonRunner.difficulty.hard', message: 'Hard'}),
+      }[difficulty]
     : null;
 
   const difficultyClass = difficulty
     ? {easy: styles.badgeEasy, medium: styles.badgeMedium, hard: styles.badgeHard}[difficulty]
     : '';
+
+  const runLabel = isRunning
+    ? isLoading
+      ? translate({id: 'pythonRunner.loadingPython', message: 'Loading Python...'})
+      : translate({id: 'pythonRunner.running', message: 'Running...'})
+    : translate({id: 'pythonRunner.run', message: 'Run'});
+
+  const copyLabel = copied
+    ? translate({id: 'pythonRunner.copied', message: 'Copied!'})
+    : translate({id: 'pythonRunner.copy', message: 'Copy'});
 
   return (
     <div className={styles.container}>
@@ -235,7 +250,7 @@ sys.stderr = io.StringIO()
         onChange={(e) => setCode(e.target.value)}
         onKeyDown={handleKeyDown}
         spellCheck={false}
-        placeholder="# Write your Python code here..."
+        placeholder={translate({id: 'pythonRunner.placeholder', message: '# Write your Python code here...'})}
       />
 
       {/* Toolbar */}
@@ -245,16 +260,16 @@ sys.stderr = io.StringIO()
           onClick={runCode}
           disabled={isRunning}
         >
-          {isRunning ? (isLoading ? 'Loading Python...' : 'Running...') : 'Run'}
+          {runLabel}
         </button>
         <button className={`${styles.btn} ${styles.btnCopy}`} onClick={handleCopy}>
-          {copied ? 'Copied!' : 'Copy'}
+          {copyLabel}
         </button>
         <button className={`${styles.btn} ${styles.btnReset}`} onClick={handleReset}>
-          Reset
+          {translate({id: 'pythonRunner.reset', message: 'Reset'})}
         </button>
         <button className={`${styles.btn} ${styles.btnClear}`} onClick={handleClear}>
-          Clear Output
+          {translate({id: 'pythonRunner.clearOutput', message: 'Clear Output'})}
         </button>
       </div>
 
@@ -262,14 +277,16 @@ sys.stderr = io.StringIO()
       {isLoading && (
         <div className={styles.loading}>
           <span className={styles.spinner} />
-          Loading Python environment...
+          {translate({id: 'pythonRunner.loadingEnvironment', message: 'Loading Python environment...'})}
         </div>
       )}
 
       {/* Output */}
       {(output || error) && (
         <div className={styles.outputSection}>
-          <div className={styles.outputHeader}>Output</div>
+          <div className={styles.outputHeader}>
+            {translate({id: 'pythonRunner.output', message: 'Output'})}
+          </div>
           <div className={styles.outputBody}>
             {output && <span>{output}</span>}
             {error && <span className={styles.errorText}>{error}</span>}
@@ -281,7 +298,10 @@ sys.stderr = io.StringIO()
       {testResults && testResults.length > 0 && (
         <div className={styles.testSection}>
           <div className={styles.testHeader}>
-            Test Results ({testResults.filter((t) => t.passed).length}/{testResults.length} passed)
+            {translate(
+              {id: 'pythonRunner.testResults', message: 'Test Results ({passed}/{total} passed)'},
+              {passed: testResults.filter((t) => t.passed).length, total: testResults.length}
+            )}
           </div>
           <ul className={styles.testList}>
             {testResults.map((result, i) => (
@@ -293,7 +313,11 @@ sys.stderr = io.StringIO()
                   <span className={styles.testDescription}>{result.description}</span>
                   {!result.passed && (
                     <span className={styles.testExpected}>
-                      Expected: {result.expected} | Got: {result.actual}
+                      {translate({id: 'pythonRunner.expected', message: 'Expected:'})}{' '}
+                      {result.expected}{' '}
+                      |{' '}
+                      {translate({id: 'pythonRunner.got', message: 'Got:'})}{' '}
+                      {result.actual}
                     </span>
                   )}
                 </div>
