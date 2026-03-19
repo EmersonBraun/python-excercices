@@ -1,0 +1,531 @@
+---
+title: REST APIs & HTTP
+sidebar_label: REST APIs & HTTP
+sidebar_position: 4
+---
+
+# REST APIs & HTTP
+
+In this module you will learn how web applications communicate over **HTTP**, how to work with **JSON data**, how to use the `requests` library patterns for GET, POST, PUT, and DELETE operations, and how to handle API authentication and errors. Because real HTTP calls don't work inside the browser sandbox, the exercises use a **mock `requests` object** that behaves identically to the real library — so you learn the exact same patterns you'd use in production.
+
+## Learning Objectives
+
+- Understand HTTP methods: GET, POST, PUT, DELETE
+- Parse and build JSON with Python's `json` module
+- Use `requests.get()`, `requests.post()`, `requests.put()`, `requests.delete()`
+- Handle HTTP errors and status codes
+- Pass headers (e.g., API keys, Bearer tokens)
+- Understand RESTful resource design
+
+---
+
+## Theory
+
+### HTTP Methods
+
+REST APIs communicate over HTTP using four primary methods:
+
+| Method | Purpose | Has Body? |
+|--------|---------|-----------|
+| `GET` | Retrieve a resource | No |
+| `POST` | Create a new resource | Yes |
+| `PUT` | Replace an existing resource | Yes |
+| `DELETE` | Remove a resource | No |
+
+A **resource** is identified by a URL like `https://api.example.com/users/42`. The response includes a **status code**:
+
+| Code | Meaning |
+|------|---------|
+| `200` | OK |
+| `201` | Created |
+| `400` | Bad Request |
+| `401` | Unauthorized |
+| `404` | Not Found |
+| `500` | Internal Server Error |
+
+### The `requests` Library
+
+The `requests` library is the standard Python HTTP client:
+
+```python
+import requests
+
+# GET
+response = requests.get("https://api.example.com/users")
+print(response.status_code)   # 200
+data = response.json()        # parse JSON body
+
+# POST
+response = requests.post(
+    "https://api.example.com/users",
+    json={"name": "Alice", "email": "alice@example.com"}
+)
+
+# PUT
+response = requests.put(
+    "https://api.example.com/users/1",
+    json={"name": "Alice Smith"}
+)
+
+# DELETE
+response = requests.delete("https://api.example.com/users/1")
+```
+
+### Authentication Headers
+
+Many APIs require an API key or Bearer token in the `Authorization` header:
+
+```python
+headers = {"Authorization": "Bearer my_secret_token"}
+response = requests.get("https://api.example.com/protected", headers=headers)
+```
+
+### Error Handling
+
+Always check the status code or use `response.raise_for_status()`:
+
+```python
+response = requests.get(url)
+if response.status_code == 200:
+    data = response.json()
+elif response.status_code == 404:
+    print("Resource not found")
+else:
+    response.raise_for_status()   # raises HTTPError for 4xx/5xx
+```
+
+See [Requests: HTTP for Humans](https://requests.readthedocs.io/en/latest/).
+
+### JSON Module
+
+Python's built-in `json` module converts between Python objects and JSON strings:
+
+```python
+import json
+
+# Python -> JSON string
+data = {"name": "Alice", "scores": [95, 87]}
+json_str = json.dumps(data, indent=2)
+
+# JSON string -> Python
+parsed = json.loads(json_str)
+print(parsed["name"])   # Alice
+```
+
+See [json — JSON encoder and decoder](https://docs.python.org/3/library/json.html).
+
+---
+
+:::info Pyodide Adapter — Mock requests
+Real HTTP calls are not available in the browser sandbox. These exercises define a `MockRequests` object that mimics the `requests` API exactly. You write and test the **same code** you'd use with the real library.
+:::
+
+## Exercises
+
+:::info How to use these exercises
+Edit the code in each panel and click **Run** (or press Ctrl+Enter / Cmd+Enter) to execute it. If test cases are defined, results appear below the output.
+:::
+
+### Exercise 1 — GET Request
+
+<PythonRunner
+  title="GET Request"
+  difficulty="easy"
+  initialCode={`# Browser adapter — MockRequests mimics the real requests library.
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self.text = str(data)
+        self._json = data
+    def json(self):
+        return self._json
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP Error: {self.status_code}")
+
+class MockRequests:
+    _users = [
+        {"id": 1, "name": "Alice", "email": "alice@example.com"},
+        {"id": 2, "name": "Bob",   "email": "bob@example.com"},
+        {"id": 3, "name": "Carol", "email": "carol@example.com"},
+    ]
+    def get(self, url, **kwargs):
+        if url == "https://api.example.com/users":
+            return MockResponse(self._users)
+        if url.startswith("https://api.example.com/users/"):
+            uid = int(url.split("/")[-1])
+            user = next((u for u in self._users if u["id"] == uid), None)
+            if user:
+                return MockResponse(user)
+            return MockResponse({"error": "Not found"}, 404)
+        return MockResponse({"error": "Not found"}, 404)
+    def post(self, url, json=None, **kwargs):
+        return MockResponse({"created": True, "data": json}, 201)
+    def put(self, url, json=None, **kwargs):
+        return MockResponse({"updated": True, "data": json}, 200)
+    def delete(self, url, **kwargs):
+        return MockResponse({"deleted": True}, 200)
+
+requests = MockRequests()
+# ---- Your code below — use requests exactly as you would the real library ----
+
+# 1. Make a GET request to "https://api.example.com/users"
+# 2. Check that the status code is 200
+# 3. Parse the JSON response and store the list in 'users'
+# 4. Print the name of each user
+
+users = None  # replace with your code
+`}
+  testCases={[
+    { input: "len(users)", expected: "3", description: "Should retrieve 3 users" },
+    { input: "users[0]['name']", expected: "Alice", description: "First user should be Alice" },
+    { input: "users[1]['name']", expected: "Bob", description: "Second user should be Bob" },
+  ]}
+/>
+
+### Exercise 2 — GET Single Resource
+
+<PythonRunner
+  title="GET Single Resource"
+  difficulty="easy"
+  initialCode={`# Browser adapter
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self.text = str(data)
+        self._json = data
+    def json(self):
+        return self._json
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTP Error: {self.status_code}")
+
+class MockRequests:
+    _users = [
+        {"id": 1, "name": "Alice", "email": "alice@example.com"},
+        {"id": 2, "name": "Bob",   "email": "bob@example.com"},
+    ]
+    def get(self, url, **kwargs):
+        if url == "https://api.example.com/users":
+            return MockResponse(self._users)
+        if url.startswith("https://api.example.com/users/"):
+            uid = int(url.split("/")[-1])
+            user = next((u for u in self._users if u["id"] == uid), None)
+            if user:
+                return MockResponse(user)
+            return MockResponse({"error": "Not found"}, 404)
+        return MockResponse({"error": "Not found"}, 404)
+
+requests = MockRequests()
+# ---- Your code below ----
+
+# Write a function get_user(user_id) that:
+# 1. Makes a GET request to "https://api.example.com/users/{user_id}"
+# 2. If status_code == 200, returns the parsed JSON dict
+# 3. If status_code == 404, returns None
+
+def get_user(user_id):
+    # Your code here
+    pass
+
+user = get_user(1)
+print(user)
+missing = get_user(999)
+print(missing)
+`}
+  testCases={[
+    { input: "get_user(1)['name']", expected: "Alice", description: "get_user(1) should return Alice" },
+    { input: "get_user(2)['email']", expected: "bob@example.com", description: "get_user(2) should return Bob's email" },
+    { input: "get_user(999)", expected: "None", description: "get_user(999) should return None for missing user" },
+  ]}
+/>
+
+### Exercise 3 — POST Request
+
+<PythonRunner
+  title="POST Request"
+  difficulty="easy"
+  initialCode={`# Browser adapter
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self.text = str(data)
+        self._json = data
+    def json(self):
+        return self._json
+
+class MockRequests:
+    def post(self, url, json=None, **kwargs):
+        if url == "https://api.example.com/users":
+            new_user = {"id": 42, **json} if json else {"id": 42}
+            return MockResponse(new_user, 201)
+        return MockResponse({"error": "Not found"}, 404)
+
+requests = MockRequests()
+# ---- Your code below ----
+
+# Write a function create_user(name, email) that:
+# 1. Makes a POST request to "https://api.example.com/users"
+#    with JSON body: {"name": name, "email": email}
+# 2. If status_code == 201, returns the parsed JSON dict
+# 3. Otherwise returns None
+
+def create_user(name, email):
+    # Your code here
+    pass
+
+new_user = create_user("Dave", "dave@example.com")
+print(new_user)
+`}
+  testCases={[
+    { input: "create_user('Dave', 'dave@example.com')['name']", expected: "Dave", description: "Should return the created user with name" },
+    { input: "create_user('Eve', 'eve@example.com')['email']", expected: "eve@example.com", description: "Should return the created user with email" },
+    { input: "create_user('Test', 'test@x.com')['id']", expected: "42", description: "Should return the assigned id" },
+  ]}
+/>
+
+### Exercise 4 — JSON Processing
+
+<PythonRunner
+  title="JSON Processing"
+  difficulty="medium"
+  initialCode={`import json
+
+# Work with JSON data directly using the json module.
+#
+# Given this JSON string representing a product catalog:
+catalog_json = """
+{
+  "store": "PyShop",
+  "products": [
+    {"id": 1, "name": "Widget",  "price": 9.99,  "in_stock": true},
+    {"id": 2, "name": "Gadget",  "price": 24.99, "in_stock": false},
+    {"id": 3, "name": "Doohickey","price": 4.49, "in_stock": true},
+    {"id": 4, "name": "Thingamajig","price": 14.99,"in_stock": true}
+  ]
+}
+"""
+
+# 1. Parse catalog_json into a Python dict called 'catalog'
+# 2. Extract the list of products and store in 'products'
+# 3. Filter only in-stock products into 'in_stock_products'
+# 4. Find the most expensive in-stock product and store in 'priciest'
+# 5. Calculate the total value of all in-stock products into 'total_value'
+#    (round to 2 decimal places)
+
+catalog = None          # replace
+products = None         # replace
+in_stock_products = None  # replace
+priciest = None         # replace — the full product dict
+total_value = None      # replace
+
+print(f"Store: {catalog['store']}")
+print(f"In stock: {[p['name'] for p in in_stock_products]}")
+print(f"Priciest: {priciest['name']} ($\\{priciest['price']})")
+print(f"Total value: $\\{total_value}")
+`}
+  testCases={[
+    { input: "catalog['store']", expected: "PyShop", description: "Should parse the store name" },
+    { input: "len(products)", expected: "4", description: "Should have 4 products" },
+    { input: "len(in_stock_products)", expected: "3", description: "3 products are in stock" },
+    { input: "priciest['name']", expected: "Thingamajig", description: "Thingamajig is the most expensive in-stock item" },
+    { input: "total_value", expected: "29.47", description: "Total: 9.99 + 4.49 + 14.99 = 29.47" },
+  ]}
+/>
+
+### Exercise 5 — Error Handling
+
+<PythonRunner
+  title="API Error Handling"
+  difficulty="medium"
+  initialCode={`# Browser adapter
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self.text = str(data)
+        self._json = data
+    def json(self):
+        return self._json
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            raise Exception(f"HTTPError: {self.status_code}")
+
+class MockRequests:
+    def get(self, url, headers=None, **kwargs):
+        token = (headers or {}).get("Authorization", "")
+        if not token.startswith("Bearer "):
+            return MockResponse({"error": "Unauthorized"}, 401)
+        if url == "https://api.example.com/data":
+            return MockResponse({"secret": "the answer is 42"}, 200)
+        return MockResponse({"error": "Not found"}, 404)
+
+requests = MockRequests()
+# ---- Your code below ----
+
+# Write a function safe_get(url, token) that:
+# 1. Makes a GET request with Authorization header: f"Bearer {token}"
+# 2. If status 200: returns response.json()
+# 3. If status 401: returns {"error": "unauthorized"}
+# 4. If status 404: returns {"error": "not_found"}
+# 5. For any other status: calls raise_for_status() and lets it propagate
+
+def safe_get(url, token):
+    # Your code here
+    pass
+
+# Valid request
+print(safe_get("https://api.example.com/data", "my_token"))
+
+# Unauthorized
+print(safe_get("https://api.example.com/data", ""))
+
+# Not found
+print(safe_get("https://api.example.com/missing", "my_token"))
+`}
+  testCases={[
+    { input: "safe_get('https://api.example.com/data', 'my_token')['secret']", expected: "the answer is 42", description: "Valid token should return secret data" },
+    { input: "safe_get('https://api.example.com/data', '')['error']", expected: "unauthorized", description: "Missing token should return unauthorized" },
+    { input: "safe_get('https://api.example.com/missing', 'my_token')['error']", expected: "not_found", description: "Bad URL should return not_found" },
+  ]}
+/>
+
+### Exercise 6 — PUT and DELETE
+
+<PythonRunner
+  title="PUT and DELETE"
+  difficulty="medium"
+  initialCode={`# Browser adapter
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self._json = data
+    def json(self):
+        return self._json
+
+_db = {
+    1: {"id": 1, "name": "Alice", "role": "user"},
+    2: {"id": 2, "name": "Bob",   "role": "admin"},
+}
+
+class MockRequests:
+    def put(self, url, json=None, **kwargs):
+        uid = int(url.split("/")[-1])
+        if uid in _db:
+            _db[uid].update(json or {})
+            return MockResponse(_db[uid], 200)
+        return MockResponse({"error": "Not found"}, 404)
+    def delete(self, url, **kwargs):
+        uid = int(url.split("/")[-1])
+        if uid in _db:
+            del _db[uid]
+            return MockResponse({"deleted": uid}, 200)
+        return MockResponse({"error": "Not found"}, 404)
+
+requests = MockRequests()
+# ---- Your code below ----
+
+# 1. Write update_user(user_id, fields) that:
+#    - Makes a PUT request to "https://api.example.com/users/{user_id}"
+#    - Sends 'fields' as the JSON body
+#    - Returns the updated user dict on 200, or None on 404
+
+# 2. Write delete_user(user_id) that:
+#    - Makes a DELETE request to "https://api.example.com/users/{user_id}"
+#    - Returns True on 200, False on 404
+
+def update_user(user_id, fields):
+    # Your code here
+    pass
+
+def delete_user(user_id):
+    # Your code here
+    pass
+
+# Test
+updated = update_user(1, {"role": "admin"})
+print(f"Updated: {updated}")
+
+deleted = delete_user(999)
+print(f"Deleted user 999: {deleted}")
+
+missing = delete_user(999)
+print(f"Delete missing: {missing}")
+`}
+  testCases={[
+    { input: "update_user(1, {'role': 'superadmin'})['role']", expected: "superadmin", description: "update_user should update and return the user" },
+    { input: "delete_user(2)", expected: "True", description: "delete_user should return True for existing user" },
+    { input: "delete_user(999)", expected: "False", description: "delete_user should return False for missing user" },
+  ]}
+/>
+
+### Exercise 7 — API Client Class (Bonus)
+
+:::caution Bonus Challenge
+Build a complete API client class. Combines GET, POST, PUT, DELETE and authentication.
+:::
+
+<PythonRunner
+  title="API Client Class"
+  difficulty="hard"
+  initialCode={`# Browser adapter
+class MockResponse:
+    def __init__(self, data, status=200):
+        self.status_code = status
+        self._json = data
+    def json(self):
+        return self._json
+
+_store = {
+    1: {"id": 1, "name": "Alice"},
+    2: {"id": 2, "name": "Bob"},
+}
+_next_id = [3]
+
+class MockRequests:
+    def get(self, url, headers=None, **kwargs):
+        if url.endswith("/users"):
+            return MockResponse(list(_store.values()), 200)
+        uid = int(url.split("/")[-1])
+        return MockResponse(_store[uid], 200) if uid in _store else MockResponse({}, 404)
+    def post(self, url, json=None, **kwargs):
+        uid = _next_id[0]; _next_id[0] += 1
+        user = {"id": uid, **json}; _store[uid] = user
+        return MockResponse(user, 201)
+    def put(self, url, json=None, **kwargs):
+        uid = int(url.split("/")[-1])
+        if uid in _store: _store[uid].update(json); return MockResponse(_store[uid], 200)
+        return MockResponse({}, 404)
+    def delete(self, url, **kwargs):
+        uid = int(url.split("/")[-1])
+        if uid in _store: del _store[uid]; return MockResponse({"deleted": uid}, 200)
+        return MockResponse({}, 404)
+
+requests = MockRequests()
+# ---- Your code below ----
+
+# Implement a class 'UserAPIClient' with:
+# - __init__(self, base_url, token): stores base_url and token
+# - _headers(self): returns {"Authorization": f"Bearer {self.token}"}
+# - list_users(self): GET /users -> list of dicts
+# - get_user(self, user_id): GET /users/{id} -> dict or None
+# - create_user(self, name): POST /users with {"name": name} -> dict
+# - update_user(self, user_id, fields): PUT /users/{id} -> dict or None
+# - delete_user(self, user_id): DELETE /users/{id} -> bool
+
+class UserAPIClient:
+    def __init__(self, base_url, token):
+        # Your code here
+        pass
+
+client = UserAPIClient("https://api.example.com", "secret")
+print(client.list_users())
+new = client.create_user("Carol")
+print(f"Created: {new}")
+`}
+  testCases={[
+    { input: "len(client.list_users()) >= 2", expected: "True", description: "list_users should return at least 2 users" },
+    { input: "client.create_user('Dave')['name']", expected: "Dave", description: "create_user should return the new user" },
+    { input: "client.get_user(1)['name']", expected: "Alice", description: "get_user(1) should return Alice" },
+    { input: "client.delete_user(2)", expected: "True", description: "delete_user should return True for existing user" },
+  ]}
+/>
