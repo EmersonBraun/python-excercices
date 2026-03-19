@@ -573,9 +573,9 @@ print(abs(v1))     # 5.0
 print(v1.dot(v2))  # 11
 `}
   testCases={[
-    { input: "Vector(3,4) + Vector(1,2)", expected: "Vector(4, 6)", description: "__add__ should add components" },
-    { input: "Vector(3,4) - Vector(1,2)", expected: "Vector(2, 2)", description: "__sub__ should subtract components" },
-    { input: "Vector(3,4) * 2", expected: "Vector(6, 8)", description: "__mul__ should scale components" },
+    { input: "Vector(3,4) + Vector(1,2)", expected: "(4, 6)", description: "__add__ should add components" },
+    { input: "Vector(3,4) - Vector(1,2)", expected: "(2, 2)", description: "__sub__ should subtract components" },
+    { input: "Vector(3,4) * 2", expected: "(6, 8)", description: "__mul__ should scale components" },
     { input: "abs(Vector(3,4))", expected: "5.0", description: "__abs__ should return magnitude" },
     { input: "Vector(3,4).dot(Vector(1,2))", expected: "11", description: "dot product of (3,4)·(1,2) should be 11" },
   ]}

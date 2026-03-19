@@ -258,7 +258,7 @@ except TypeError as e:
   testCases={[
     { input: "validate_username('Alice')", expected: "alice", description: "Valid username should return lowercased name" },
     { input: "validate_username('Bob123')", expected: "bob123", description: "Alphanumeric username should be accepted" },
-    { input: "str(type(lambda: validate_username('Jo'))())", expected: "<class 'ValueError'>", description: "Short name should raise ValueError" },
+    { input: "try:\n    validate_username('Jo')\n    'not raised'\nexcept ValueError:\n    'raised'", expected: "raised", description: "Short username should raise ValueError" },
   ]}
 />
 
