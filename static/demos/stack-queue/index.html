@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stack & Queue Visualization</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+  }
+  h1 { font-size: 1.25rem; font-weight: 700; margin-bottom: 12px; color: #f8fafc; }
+  #main {
+    width: 100%;
+    max-width: 760px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .panel {
+    background: #1e293b;
+    border-radius: 10px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .panel-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f8fafc;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+    vertical-align: middle;
+  }
+  .badge-lifo { background: #7c3aed; color: #fff; }
+  .badge-fifo { background: #0369a1; color: #fff; }
+  .structure-box {
+    min-height: 160px;
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .structure-box.queue-box {
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+  .item {
+    padding: 8px 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    transition: all 0.25s ease;
+    animation: slideIn 0.25s ease;
+    flex-shrink: 0;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  .item-stack { background: #4f46e5; color: #fff; }
+  .item-queue { background: #0284c7; color: #fff; width: 48px; }
+  .item.top    { background: #22c55e !important; }
+  .item.front  { background: #fbbf24 !important; color: #0f172a !important; }
+  .item.removing { animation: slideOut 0.25s ease forwards; }
+  @keyframes slideOut {
+    to { opacity: 0; transform: scale(0.5); }
+  }
+  .struct-label {
+    font-size: 0.65rem;
+    color: #64748b;
+    text-align: center;
+    position: absolute;
+    bottom: 3px; right: 6px;
+  }
+  .btn-row {
+    display: flex; gap: 6px; align-items: center; flex-wrap: wrap;
+  }
+  input[type=text] {
+    flex: 1; min-width: 50px; padding: 6px 8px; border-radius: 6px;
+    border: 1px solid #334155; background: #0f172a; color: #f1f5f9;
+    font-size: 0.82rem;
+  }
+  button {
+    padding: 6px 12px; border: none; border-radius: 6px;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    transition: opacity 0.15s; white-space: nowrap;
+  }
+  button:hover { opacity: 0.85; }
+  .btn-push    { background: #22c55e; color: #fff; }
+  .btn-pop     { background: #ef4444; color: #fff; }
+  .btn-enqueue { background: #22c55e; color: #fff; }
+  .btn-dequeue { background: #ef4444; color: #fff; }
+  .info-row {
+    font-size: 0.75rem; color: #64748b;
+    display: flex; justify-content: space-between;
+  }
+  .info-row strong { color: #94a3b8; }
+  #msg {
+    max-width: 760px; width: 100%;
+    text-align: center; font-size: 0.82rem; color: #94a3b8; min-height: 18px;
+  }
+</style>
+</head>
+<body>
+<h1>Stack &amp; Queue Visualization</h1>
+<div id="main">
+  <!-- Stack -->
+  <div class="panel">
+    <div class="panel-title">Stack <span class="badge badge-lifo">LIFO</span></div>
+    <div class="structure-box" id="stack-box">
+      <span class="struct-label">bottom</span>
+    </div>
+    <div class="btn-row">
+      <input type="text" id="stack-input" placeholder="value" maxlength="5">
+      <button class="btn-push" id="btn-push">Push</button>
+      <button class="btn-pop"  id="btn-pop">Pop</button>
+    </div>
+    <div class="info-row">
+      <span>Size: <strong id="stack-size">0</strong></span>
+      <span>Top: <strong id="stack-top">-</strong></span>
+    </div>
+  </div>
+  <!-- Queue -->
+  <div class="panel">
+    <div class="panel-title">Queue <span class="badge badge-fifo">FIFO</span></div>
+    <div class="structure-box queue-box" id="queue-box"></div>
+    <div class="btn-row">
+      <input type="text" id="queue-input" placeholder="value" maxlength="5">
+      <button class="btn-enqueue" id="btn-enqueue">Enqueue</button>
+      <button class="btn-dequeue" id="btn-dequeue">Dequeue</button>
+    </div>
+    <div class="info-row">
+      <span>Size: <strong id="queue-size">0</strong></span>
+      <span>Front: <strong id="queue-front">-</strong></span>
+    </div>
+  </div>
+</div>
+<div id="msg">Use Push/Pop for the Stack and Enqueue/Dequeue for the Queue.</div>
+
+<script>
+let stack = [];
+let queue = [];
+const MAX = 8;
+
+function colorFor(i) {
+  const palette = ['#4f46e5','#7c3aed','#0ea5e9','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899'];
+  return palette[i % palette.length];
+}
+
+function renderStack() {
+  const box = document.getElementById('stack-box');
+  box.replaceChildren();
+
+  const label = document.createElement('span');
+  label.className = 'struct-label';
+  label.textContent = 'bottom';
+  box.appendChild(label);
+
+  stack.forEach((v, i) => {
+    const el = document.createElement('div');
+    el.className = 'item item-stack' + (i === stack.length - 1 ? ' top' : '');
+    el.style.background = i === stack.length - 1 ? '#22c55e' : colorFor(i);
+    el.textContent = v;
+    box.appendChild(el);
+  });
+
+  document.getElementById('stack-size').textContent = stack.length;
+  document.getElementById('stack-top').textContent = stack.length ? stack[stack.length - 1] : '-';
+}
+
+function renderQueue() {
+  const box = document.getElementById('queue-box');
+  box.replaceChildren();
+
+  queue.forEach((v, i) => {
+    const el = document.createElement('div');
+    el.className = 'item item-queue' + (i === 0 ? ' front' : '');
+    el.style.background = i === 0 ? '#fbbf24' : colorFor(i + 2);
+    el.style.color = i === 0 ? '#0f172a' : '#fff';
+    el.textContent = v;
+    box.appendChild(el);
+  });
+
+  document.getElementById('queue-size').textContent = queue.length;
+  document.getElementById('queue-front').textContent = queue.length ? queue[0] : '-';
+}
+
+function setMsg(m) { document.getElementById('msg').textContent = m; }
+
+document.getElementById('btn-push').addEventListener('click', () => {
+  if (stack.length >= MAX) { setMsg('Stack is full (max ' + MAX + ').'); return; }
+  const val = document.getElementById('stack-input').value.trim() || String(Math.floor(Math.random()*100));
+  stack.push(val);
+  document.getElementById('stack-input').value = '';
+  setMsg('Pushed "' + val + '" onto the stack.');
+  renderStack();
+});
+
+document.getElementById('btn-pop').addEventListener('click', () => {
+  if (!stack.length) { setMsg('Stack is empty.'); return; }
+  const val = stack.pop();
+  setMsg('Popped "' + val + '" from the stack (LIFO).');
+  renderStack();
+});
+
+document.getElementById('btn-enqueue').addEventListener('click', () => {
+  if (queue.length >= MAX) { setMsg('Queue is full (max ' + MAX + ').'); return; }
+  const val = document.getElementById('queue-input').value.trim() || String(Math.floor(Math.random()*100));
+  queue.push(val);
+  document.getElementById('queue-input').value = '';
+  setMsg('Enqueued "' + val + '" to the back of the queue.');
+  renderQueue();
+});
+
+document.getElementById('btn-dequeue').addEventListener('click', () => {
+  if (!queue.length) { setMsg('Queue is empty.'); return; }
+  const val = queue.shift();
+  setMsg('Dequeued "' + val + '" from the front of the queue (FIFO).');
+  renderQueue();
+});
+
+// Seed with some initial values
+['A', 'B', 'C'].forEach(v => { stack.push(v); });
+['X', 'Y', 'Z'].forEach(v => { queue.push(v); });
+renderStack();
+renderQueue();
+</script>
+</body>
+</html>
