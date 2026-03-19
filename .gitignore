@@ -11,4 +11,13 @@
 build/
 node_modules/
 
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Playwright
+/playwright-report/
+/test-results/
+
 
