@@ -3,4 +3,9 @@
 /.venv
 /venv
 
+# Docusaurus
+.docusaurus/
+build/
+node_modules/
+
 
